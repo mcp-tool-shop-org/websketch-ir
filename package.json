@@ -1,5 +1,5 @@
 {
-  "name": "@mcp-tool-shop/websketch-ir",
+  "name": "@mcptoolshop/websketch-ir",
   "version": "0.2.0",
   "description": "Grammar-based representation of web UI for LLM consumption",
   "type": "module",
