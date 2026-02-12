@@ -86,4 +86,4 @@ jobs:
           echo "✓ Build artifacts present"
 
       - name: Verify exports
-        run: node -e "import('@websketch/ir').then(() => console.log('✓ Package exports valid'))"
+        run: node -e "import('@mcptoolshop/websketch-ir').then(() => console.log('✓ Package exports valid'))"
