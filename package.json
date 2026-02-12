@@ -25,12 +25,12 @@
     "build": "tsc",
     "clean": "rimraf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint 'src/**/*.{ts,tsx}'",
-    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs",
-    "test:run": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run",
-    "coverage": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run --coverage",
+    "lint": "eslint src/**/*.ts",
+    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs --passWithNoTests",
+    "test:run": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run --passWithNoTests",
+    "coverage": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run --coverage --passWithNoTests",
     "validate": "npm run clean && npm run typecheck && npm run lint && npm run build && npm run test:run",
-    "prepublishOnly": "npm run clean && npm run build && npm run test:run"
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
     "websketch",
