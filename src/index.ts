@@ -77,3 +77,20 @@ export {
   formatDiff,
   formatDiffJson,
 } from "./diff.js";
+
+// Error types and validation
+export type {
+  WebSketchErrorCode,
+  WebSketchError,
+  WebSketchValidationIssue,
+  WebSketchValidationError,
+  WebSketchLimits,
+} from "./errors.js";
+export {
+  WebSketchException,
+  DEFAULT_LIMITS,
+  validateCapture,
+  parseCapture,
+  formatWebSketchError,
+  isWebSketchException,
+} from "./errors.js";

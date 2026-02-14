@@ -13,6 +13,10 @@
     "./grammar": {
       "types": "./dist/grammar.d.ts",
       "import": "./dist/grammar.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
     }
   },
   "files": [
