@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/websketch-logo.png" alt="WebSketch" width="400">
+</p>
+
 # WebSketch IR
 
 **WebSketch IR** is a grammar-based intermediate representation for capturing web page UI structure as semantic primitives. It provides a compact, LLM-friendly format for describing UI layouts, interactive elements, and visual hierarchy.
