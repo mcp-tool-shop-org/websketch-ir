@@ -11,7 +11,13 @@
  */
 
 import type { BBox01, UINode, WebSketchCapture } from "./grammar.js";
-import { bboxSimilarity, nodeSimilarity, hashNodeShallow } from "./hash.js";
+import {
+  bboxSimilarity,
+  nodeSimilarity,
+  hashNodeShallow,
+  fingerprintCapture,
+  fingerprintLayout,
+} from "./hash.js";
 
 // =============================================================================
 // Types
@@ -413,8 +419,8 @@ export function diff(
     summary: {
       counts,
       identical,
-      fingerprintsMatch: false, // Computed externally if needed
-      layoutFingerprintsMatch: false,
+      fingerprintsMatch: fingerprintCapture(captureA) === fingerprintCapture(captureB),
+      layoutFingerprintsMatch: fingerprintLayout(captureA) === fingerprintLayout(captureB),
       nodeCountA,
       nodeCountB,
     },
