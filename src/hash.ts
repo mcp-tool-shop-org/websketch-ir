@@ -10,7 +10,7 @@
 
 import type { BBox01, UINode, WebSketchCapture } from "./grammar.js";
 import { BBOX_QUANT_STEP } from "./grammar.js";
-import { sha256Sync } from "./text.js";
+import { hashSync } from "./text.js";
 
 // =============================================================================
 // Bbox Quantization
@@ -126,7 +126,7 @@ export function hashNodeShallow(node: UINode, options: HashOptions = {}): string
     parts.push(`z:${input.z}`);
   }
 
-  return sha256Sync(parts.join("|"));
+  return hashSync(parts.join("|"));
 }
 
 /**
@@ -154,7 +154,7 @@ export function hashNodeDeep(node: UINode, options: HashOptions = {}): string {
 
   // Combine shallow hash with child hashes
   const combined = `${shallowHash}|c:[${childHashes.join(",")}]`;
-  return sha256Sync(combined);
+  return hashSync(combined);
 }
 
 // =============================================================================
@@ -171,7 +171,7 @@ export function fingerprintCapture(capture: WebSketchCapture): string {
   // Include viewport aspect ratio (different layouts = different fingerprint)
   const aspectKey = capture.viewport.aspect.toFixed(2);
 
-  return sha256Sync(`${rootHash}|a:${aspectKey}`);
+  return hashSync(`${rootHash}|a:${aspectKey}`);
 }
 
 /**
@@ -185,7 +185,7 @@ export function fingerprintLayout(capture: WebSketchCapture): string {
   });
 
   const aspectKey = capture.viewport.aspect.toFixed(2);
-  return sha256Sync(`${rootHash}|a:${aspectKey}`);
+  return hashSync(`${rootHash}|a:${aspectKey}`);
 }
 
 // =============================================================================

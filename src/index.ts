@@ -29,6 +29,8 @@ export {
 export {
   normalizeText,
   sha256,
+  hashSync,
+  /** @deprecated Use hashSync instead — sha256Sync uses djb2, not SHA-256. */
   sha256Sync,
   classifyText,
   isMixedContent,

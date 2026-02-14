@@ -76,12 +76,17 @@ function djb2Hash(text: string): string {
 /**
  * Synchronous hash for structural fingerprinting.
  * Uses djb2 for speed - this is NOT for security, just for comparing structures.
+ * Returns an 8-character hexadecimal string.
  */
-export function sha256Sync(text: string): string {
-  // For structural hashing, djb2 is sufficient and works everywhere
-  // If you need cryptographic hashing, use the async sha256() function
+export function hashSync(text: string): string {
   return djb2Hash(text);
 }
+
+/**
+ * @deprecated Use {@link hashSync} instead. This function uses djb2, not SHA-256.
+ * Will be removed in v0.4.
+ */
+export const sha256Sync: (text: string) => string = hashSync;
 
 // =============================================================================
 // Text Classification
