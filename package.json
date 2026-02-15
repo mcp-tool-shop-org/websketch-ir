@@ -59,7 +59,7 @@
   },
   "homepage": "https://github.com/mcp-tool-shop-org/websketch-ir#readme",
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^25.2.3",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "@vitest/coverage-v8": "^1.1.0",
