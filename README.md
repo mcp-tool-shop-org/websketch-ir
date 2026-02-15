@@ -4,6 +4,10 @@
 
 # WebSketch IR
 
+[![CI](https://github.com/mcp-tool-shop-org/websketch-ir/actions/workflows/ci.yml/badge.svg)](https://github.com/mcp-tool-shop-org/websketch-ir/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@mcptoolshop/websketch-ir.svg)](https://www.npmjs.com/package/@mcptoolshop/websketch-ir)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **WebSketch IR** is a grammar-based intermediate representation for capturing web page UI structure as semantic primitives. It provides a compact, LLM-friendly format for describing UI layouts, interactive elements, and visual hierarchy.
 
 ## Overview
@@ -27,41 +31,80 @@ WebSketch IR is the core library for the WebSketch family of tools:
 | [websketch-mcp](https://github.com/mcp-tool-shop-org/websketch-mcp) | MCP server for LLM agent integration |
 | [websketch-demo](https://github.com/mcp-tool-shop-org/websketch-demo) | Interactive demo and visualization |
 
+## Getting Started
+
+WebSketch captures web UI as a compact grammar for LLMs. The typical workflow:
+
+1. **Capture** -- Use the [Chrome extension](https://github.com/mcp-tool-shop-org/websketch-extension) to capture a page
+2. **Validate** -- `websketch validate capture.json` (CLI) or `websketch_validate` (MCP)
+3. **Visualize** -- Paste into the [demo](https://mcptoolshop.com) or `websketch render capture.json`
+4. **Diff** -- `websketch diff before.json after.json` to compare captures
+5. **Bundle** -- `websketch bundle a.json b.json -o bundle.ws.json` to share
+
+**JSON envelope** (CLI `--json` and MCP tools):
+```json
+{ "ok": true, ... }
+{ "ok": false, "error": { "code": "WS_...", "message": "..." } }
+```
+
 ## Installation
 
 ```bash
-npm install websketch-ir
+npm install @mcptoolshop/websketch-ir
 ```
 
 ## Usage
 
-```javascript
-const { parse, serialize, fingerprint } = require('websketch-ir');
+```typescript
+import {
+  parseCapture,
+  renderAscii,
+  diff,
+  fingerprintCapture,
+  validateCapture,
+  isSupportedSchemaVersion,
+  CURRENT_SCHEMA_VERSION,
+} from '@mcptoolshop/websketch-ir';
 
-// Parse a WebSketch IR string
-const ir = parse(websketchString);
+// Parse and validate a capture (throws WebSketchException on error)
+const capture = parseCapture(jsonString);
 
-// Serialize back to string
-const output = serialize(ir);
+// Render to ASCII wireframe
+const ascii = renderAscii(capture);
 
-// Generate a content-addressable fingerprint
-const hash = fingerprint(ir);
+// Generate a structural fingerprint
+const fp = fingerprintCapture(capture);
+
+// Compare two captures
+const result = diff(captureA, captureB);
+
+// Check schema version compatibility
+isSupportedSchemaVersion("0.1"); // true
 ```
 
-## Grammar
+## Schema Versioning
 
-WebSketch IR uses a compact grammar to represent UI structure:
+WebSketch IR uses semantic versioning for the capture schema:
 
-```
-container[grid:2x3] {
-  header { nav { link[href=/home] "Home" } }
-  main {
-    section { heading[1] "Title" paragraph "Content..." }
-    form { input[type=text,name=email] button[submit] "Send" }
-  }
-  footer { text "© 2026" }
-}
-```
+- **Current version**: `0.1`
+- **Forward compat**: unknown fields are ignored (consumers MUST tolerate them)
+- **Backward compat**: validators accept any version in `SUPPORTED_SCHEMA_VERSIONS`
+- **Version check**: `isSupportedSchemaVersion(v)` returns `true` for supported versions
+- **Unsupported version**: validators return `WS_UNSUPPORTED_VERSION`
+
+## Error Codes
+
+| Code | Meaning |
+|------|---------|
+| `WS_INVALID_JSON` | Input is not valid JSON |
+| `WS_INVALID_CAPTURE` | Capture fails schema validation |
+| `WS_UNSUPPORTED_VERSION` | Capture version not supported |
+| `WS_LIMIT_EXCEEDED` | Node count or depth exceeds limits |
+| `WS_INVALID_ARGS` | Missing or invalid arguments |
+| `WS_NOT_FOUND` | File not found |
+| `WS_IO_ERROR` | Filesystem I/O error |
+| `WS_PERMISSION_DENIED` | Insufficient permissions |
+| `WS_INTERNAL` | Unexpected internal error |
 
 ## License
 

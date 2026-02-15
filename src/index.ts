@@ -78,6 +78,13 @@ export {
   formatDiffJson,
 } from "./diff.js";
 
+// Schema version compatibility
+export {
+  CURRENT_SCHEMA_VERSION,
+  SUPPORTED_SCHEMA_VERSIONS,
+  isSupportedSchemaVersion,
+} from "./compat.js";
+
 // Error types and validation
 export type {
   WebSketchErrorCode,

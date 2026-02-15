@@ -6,6 +6,7 @@
  */
 
 import type { UIRole, WebSketchCapture } from "./grammar.js";
+import { isSupportedSchemaVersion } from "./compat.js";
 
 // =============================================================================
 // Error Codes
@@ -241,11 +242,11 @@ export function validateCapture(
 
   const obj = data as Record<string, unknown>;
 
-  // version (required, must be "0.1")
+  // version (required, must be a supported schema version)
   if (typeof obj.version !== "string") {
-    issues.push(issue("version", '"0.1"', typeOf(obj.version), "Capture version is required"));
-  } else if (obj.version !== "0.1") {
-    issues.push(issue("version", '"0.1"', `"${obj.version}"`, `Unsupported version: "${obj.version}"`));
+    issues.push(issue("version", "string (schema version)", typeOf(obj.version), "Capture version is required"));
+  } else if (!isSupportedSchemaVersion(obj.version)) {
+    issues.push(issue("version", "supported version", `"${obj.version}"`, `Unsupported version: "${obj.version}"`));
   }
 
   // url (required, string)
