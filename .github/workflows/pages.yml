@@ -6,6 +6,11 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 concurrency:
@@ -31,6 +36,10 @@ jobs:
         working-directory: site
         run: npm ci
 
+      - name: Audit site dependencies
+        working-directory: site
+        run: npm audit --audit-level=high
+
       - name: Build site
         working-directory: site
         run: npm run build
@@ -41,6 +50,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
