@@ -1,0 +1,80 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`golden render snapshots > renderAscii(loginPage) matches snapshot 1`] = `
+"  [LNK…   [LNK…                                                                 
+ [[NAV:primary_nav]                                                             
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                    ┌──────────────────────────────────────┐                    
+                    │[F[INP:email..]                       │                    
+                    │                                      │                    
+                    │  [INP:password.]                     │                    
+                    │                                      │                    
+                    │                                      │                    
+                    │        [BTN:submit.]                 │                    
+                    │                                      │                    
+                    │                                      │                    
+                    │                                      │                    
+                    └──────────────────────────────────────┘                    
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+ [FTR]                                                                          "
+`;
+
+exports[`golden render snapshots > renderForLLM(loginPage) matches snapshot 1`] = `
+"URL: https://example.com/login
+Viewport: 1920x1080
+Captured: 2023-11-14T22:13:20.000Z
+────────────────────────────────────────────────────────────────────────────────
+  [LNK…   [LNK…                                                                 
+ [[NAV:primary_nav]                                                             
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                    ┌──────────────────────────────────────┐                    
+                    │[F[INP:email..]                       │                    
+                    │                                      │                    
+                    │  [INP:password.]                     │                    
+                    │                                      │                    
+                    │                                      │                    
+                    │        [BTN:submit.]                 │                    
+                    │                                      │                    
+                    │                                      │                    
+                    │                                      │                    
+                    └──────────────────────────────────────┘                    
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+ [FTR]                                                                          
+────────────────────────────────────────────────────────────────────────────────
+NAV=NAV | HDR=HEADER | FTR=FOOTER | CRD=CARD | LST=LIST | TBL=TABLE | MDL=MODAL | TST=TOAST | DRP=DROPDOWN | FRM=FORM | INP=INPUT | BTN=BUTTON | LNK=LINK | CHK=CHECKBOX | RAD=RADIO | IMG=IMAGE | PAG=PAGINATION"
+`;
+
+exports[`golden render snapshots > renderStructure(loginPage) matches snapshot 1`] = `
+"  [L…   [L…                                                 
+ [[NAV]                                                     
+                                                            
+                                                            
+               +-[INP]----------------------+               
+               |[FRM]                       |               
+               | [INP]                      |               
+               |                            |               
+               |      [BTN]                 |               
+               |                            |               
+               |                            |               
+               +----------------------------+               
+                                                            
+                                                            
+                                                            
+ [FTR]                                                      "
+`;

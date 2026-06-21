@@ -1,0 +1,11 @@
+# Default owners for everything in the repo
+* @mcp-tool-shop
+
+# CI/CD workflows
+/.github/ @mcp-tool-shop
+
+# Core source code
+/src/ @mcp-tool-shop
+
+# Tests
+/tests/ @mcp-tool-shop

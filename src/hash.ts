@@ -1,0 +1,407 @@
+/**
+ * WebSketch IR v0.1 - Node Hashing
+ *
+ * Structural fingerprinting for nodes and captures.
+ * Used for:
+ * - Fast equality checks
+ * - Content-addressed node IDs
+ * - Diff matching
+ *
+ * **Algorithm versioning note:** The current implementation uses the
+ * hash function from `text.ts` (xxhash-based). Changing the algorithm
+ * would invalidate every existing fingerprint and content-addressed ID.
+ * If a migration is ever needed, prefix hashes with a version tag
+ * (e.g. `v1:abc123`) so consumers can detect and handle mixed corpora.
+ */
+
+import type { BBox01, UINode, WebSketchCapture } from "./grammar.js";
+import { BBOX_QUANT_STEP } from "./grammar.js";
+import { hashSync } from "./text.js";
+
+// =============================================================================
+// Bbox Quantization
+// =============================================================================
+
+/**
+ * Quantize a bbox value to reduce noise from subpixel differences.
+ * Default step: 0.001 (1px at 1000px viewport)
+ */
+export function quantizeBbox(bbox: BBox01, step: number = BBOX_QUANT_STEP): BBox01 {
+  return [
+    Math.round(bbox[0] / step) * step,
+    Math.round(bbox[1] / step) * step,
+    Math.round(bbox[2] / step) * step,
+    Math.round(bbox[3] / step) * step,
+  ] as BBox01;
+}
+
+/**
+ * Convert bbox to string for hashing.
+ */
+export function bboxToString(bbox: BBox01, precision: number = 3): string {
+  return bbox.map((v) => v.toFixed(precision)).join(",");
+}
+
+// =============================================================================
+// Node Hashing
+// =============================================================================
+
+/**
+ * Hash input for a single node (excluding children).
+ */
+interface NodeHashInput {
+  role: string;
+  bbox: string;
+  interactive: boolean;
+  visible: boolean;
+  enabled?: boolean;
+  semantic?: string;
+  text_hash?: string;
+  name_hash?: string;
+  z?: number;
+}
+
+/**
+ * Create hash input from a node (shallow, no children).
+ */
+function nodeToHashInput(node: UINode): NodeHashInput {
+  const qbbox = quantizeBbox(node.bbox);
+  return {
+    role: node.role,
+    bbox: bboxToString(qbbox),
+    interactive: node.interactive,
+    visible: node.visible,
+    enabled: node.enabled,
+    semantic: node.semantic,
+    text_hash: node.text?.hash,
+    name_hash: node.name_hash,
+    z: node.z,
+  };
+}
+
+/**
+ * Options for node hashing.
+ */
+export interface HashOptions {
+  /** Include text_hash in structural hash (default: true) */
+  includeText?: boolean;
+  /** Include name_hash in structural hash (default: true) */
+  includeName?: boolean;
+  /** Include z-index in hash (default: false, since it's often noisy) */
+  includeZ?: boolean;
+  /** Include handler intents in hash (default: true) */
+  includeHandlers?: boolean;
+  /** Include binding signals in hash (default: false) */
+  includeBindings?: boolean;
+  /** Include state signals in hash (default: true) */
+  includeState?: boolean;
+  /** Include style intent tokens in hash (default: false — visual noise) */
+  includeStyle?: boolean;
+  /** Include pattern signals in hash (default: true) */
+  includePattern?: boolean;
+}
+
+const DEFAULT_HASH_OPTIONS: HashOptions = {
+  includeText: true,
+  includeName: true,
+  includeZ: false,
+  includeHandlers: true,
+  includeBindings: false,
+  includeState: true,
+  includeStyle: false,
+  includePattern: true,
+};
+
+/**
+ * Compute structural hash for a node (without children).
+ */
+export function hashNodeShallow(node: UINode, options: HashOptions = {}): string {
+  const opts = { ...DEFAULT_HASH_OPTIONS, ...options };
+  const input = nodeToHashInput(node);
+
+  // Build deterministic string representation
+  const parts: string[] = [
+    `r:${input.role}`,
+    `b:${input.bbox}`,
+    `i:${input.interactive ? 1 : 0}`,
+    `v:${input.visible ? 1 : 0}`,
+  ];
+
+  if (input.enabled !== undefined) {
+    parts.push(`e:${input.enabled ? 1 : 0}`);
+  }
+
+  if (input.semantic) {
+    parts.push(`s:${input.semantic}`);
+  }
+
+  if (opts.includeText && input.text_hash) {
+    parts.push(`t:${input.text_hash.slice(0, 16)}`); // Truncate for efficiency
+  }
+
+  if (opts.includeName && input.name_hash) {
+    parts.push(`n:${input.name_hash.slice(0, 16)}`);
+  }
+
+  if (opts.includeZ && input.z !== undefined) {
+    parts.push(`z:${input.z}`);
+  }
+
+  // Handler intents (sorted for determinism)
+  if (opts.includeHandlers && node.handlers && node.handlers.length > 0) {
+    const hParts = [...node.handlers]
+      .sort((a, b) => a.event.localeCompare(b.event) || a.intent.localeCompare(b.intent))
+      .map((h) => `${h.event}:${h.intent}${h.target ? `→${h.target}` : ""}`);
+    parts.push(`h:[${hParts.join(",")}]`);
+  }
+
+  // Binding signals (sorted for determinism)
+  if (opts.includeBindings && node.bindings && node.bindings.length > 0) {
+    const bParts = [...node.bindings]
+      .sort((a, b) => a.property.localeCompare(b.property))
+      .map((b) => `${b.property}=${b.expression}`);
+    parts.push(`bd:[${bParts.join(",")}]`);
+  }
+
+  // State signals (sorted for determinism)
+  if (opts.includeState && node.state && node.state.length > 0) {
+    const sParts = [...node.state]
+      .sort((a, b) => a.key.localeCompare(b.key) || a.access.localeCompare(b.access))
+      .map((s) => `${s.key}:${s.access}${s.scope ? `@${s.scope}` : ""}`);
+    parts.push(`st:[${sParts.join(",")}]`);
+  }
+
+  // Style intent tokens (sorted for determinism)
+  if (opts.includeStyle && node.style?.tokens && node.style.tokens.length > 0) {
+    const tParts = [...node.style.tokens].sort();
+    const extras: string[] = [];
+    if (node.style.density) extras.push(`d:${node.style.density}`);
+    if (node.style.size) extras.push(`sz:${node.style.size}`);
+    const suffix = extras.length > 0 ? `|${extras.join(",")}` : "";
+    parts.push(`si:[${tParts.join(",")}${suffix}]`);
+  }
+
+  // Pattern signal (kind + optional name/variant/slot)
+  if (opts.includePattern && node.pattern) {
+    const pParts = [`k:${node.pattern.kind}`];
+    if (node.pattern.name) pParts.push(`n:${node.pattern.name}`);
+    if (node.pattern.variant) pParts.push(`v:${node.pattern.variant}`);
+    if (node.pattern.slot) pParts.push(`sl:${node.pattern.slot}`);
+    parts.push(`pt:[${pParts.join(",")}]`);
+  }
+
+  return hashSync(parts.join("\0"));
+}
+
+/**
+ * Compute structural hash for a node including children (recursive).
+ * Children are sorted by position (y, then x) for stability.
+ */
+export function hashNodeDeep(node: UINode, options: HashOptions = {}): string {
+  const shallowHash = hashNodeShallow(node, options);
+
+  if (!node.children || node.children.length === 0) {
+    return shallowHash;
+  }
+
+  // Sort children by position for deterministic ordering
+  const sortedChildren = [...node.children].sort((a, b) => {
+    // Primary sort: y position
+    const yDiff = a.bbox[1] - b.bbox[1];
+    if (Math.abs(yDiff) > BBOX_QUANT_STEP) return yDiff;
+    // Secondary sort: x position
+    return a.bbox[0] - b.bbox[0];
+  });
+
+  // Hash children recursively
+  const childHashes = sortedChildren.map((child) => hashNodeDeep(child, options));
+
+  // Combine shallow hash with child hashes
+  const combined = `${shallowHash}|c:[${childHashes.join(",")}]`;
+  return hashSync(combined);
+}
+
+// =============================================================================
+// Capture Fingerprinting
+// =============================================================================
+
+/**
+ * Compute a fingerprint for an entire capture.
+ * This is a fast check for "is this page the same?"
+ */
+export function fingerprintCapture(capture: WebSketchCapture): string {
+  const rootHash = hashNodeDeep(capture.root);
+
+  // Include viewport aspect ratio (different layouts = different fingerprint)
+  const aspectKey = capture.viewport.aspect.toFixed(2);
+
+  return hashSync(`${rootHash}|a:${aspectKey}`);
+}
+
+/**
+ * Compute a layout-only fingerprint (ignores text content).
+ * Useful for detecting structural changes while ignoring content updates.
+ */
+export function fingerprintLayout(capture: WebSketchCapture): string {
+  const rootHash = hashNodeDeep(capture.root, {
+    includeText: false,
+    includeName: false,
+  });
+
+  const aspectKey = capture.viewport.aspect.toFixed(2);
+  return hashSync(`${rootHash}|a:${aspectKey}`);
+}
+
+// =============================================================================
+// Node ID Generation
+// =============================================================================
+
+/**
+ * Generate a stable ID for a node based on its content and position.
+ * This is content-addressed: same node = same ID across captures.
+ */
+export function generateNodeId(node: UINode, parentPath: string = ""): string {
+  const hash = hashNodeShallow(node);
+  // Use first 12 chars of hash + position hint
+  const posHint = `${Math.round(node.bbox[0] * 100)}_${Math.round(node.bbox[1] * 100)}`;
+  return parentPath ? `${parentPath}/${hash.slice(0, 12)}_${posHint}` : `/${hash.slice(0, 12)}_${posHint}`;
+}
+
+/**
+ * Assign IDs to all nodes in a tree (mutates in place).
+ */
+export function assignNodeIds(node: UINode, parentPath: string = ""): void {
+  node.id = generateNodeId(node, parentPath);
+
+  if (node.children) {
+    for (const child of node.children) {
+      assignNodeIds(child, node.id);
+    }
+  }
+}
+
+// =============================================================================
+// Similarity / Matching
+// =============================================================================
+
+/**
+ * Compute similarity score between two nodes (0-1).
+ * Used for diff matching.
+ *
+ * Note: The denominator (weights) varies per pair because optional
+ * features (semantics, handlers, state, style, pattern) only contribute
+ * when present. Scores are therefore relative — valid for ranking
+ * candidate matches but not directly comparable across unrelated pairs.
+ */
+export function nodeSimilarity(a: UINode, b: UINode): number {
+  let score = 0;
+  let weights = 0;
+
+  // Role match (high weight)
+  if (a.role === b.role) {
+    score += 3;
+  }
+  weights += 3;
+
+  // Bbox proximity (using IoU-like metric)
+  const bboxSim = bboxSimilarity(a.bbox, b.bbox);
+  score += bboxSim * 2;
+  weights += 2;
+
+  // Interactivity match
+  if (a.interactive === b.interactive) {
+    score += 1;
+  }
+  weights += 1;
+
+  // Semantic match (if present)
+  if (a.semantic && b.semantic) {
+    weights += 2;
+    if (a.semantic === b.semantic) {
+      score += 2;
+    }
+    // Explicit mismatch: both have semantics but they differ — no score added
+  } else if (a.semantic || b.semantic) {
+    weights += 2; // Penalize if one has semantic and other doesn't
+  }
+
+  // Text hash match
+  if (a.text?.hash && b.text?.hash && a.text.hash === b.text.hash) {
+    score += 1;
+  }
+  weights += 1;
+
+  // Handler event match (same set of event types → likely same component)
+  const aEvents = a.handlers?.map((h) => h.event).sort().join(",") ?? "";
+  const bEvents = b.handlers?.map((h) => h.event).sort().join(",") ?? "";
+  if (aEvents && bEvents && aEvents === bEvents) {
+    score += 1;
+  }
+  if (aEvents || bEvents) {
+    weights += 1;
+  }
+
+  // State key overlap (shared state keys → likely related components)
+  const aStateKeys = new Set(a.state?.map((s) => s.key) ?? []);
+  const bStateKeys = new Set(b.state?.map((s) => s.key) ?? []);
+  if (aStateKeys.size > 0 && bStateKeys.size > 0) {
+    let overlap = 0;
+    for (const k of aStateKeys) {
+      if (bStateKeys.has(k)) overlap++;
+    }
+    const union = new Set([...aStateKeys, ...bStateKeys]).size;
+    score += union > 0 ? overlap / union : 0;
+    weights += 1;
+  }
+
+  // Style intent token overlap
+  const aTokens = new Set(a.style?.tokens ?? []);
+  const bTokens = new Set(b.style?.tokens ?? []);
+  if (aTokens.size > 0 && bTokens.size > 0) {
+    let overlap = 0;
+    for (const t of aTokens) {
+      if (bTokens.has(t)) overlap++;
+    }
+    const union = new Set([...aTokens, ...bTokens]).size;
+    score += union > 0 ? overlap / union : 0;
+    weights += 1;
+  }
+
+  // Pattern kind match (same pattern kind → very likely same component)
+  if (a.pattern && b.pattern) {
+    if (a.pattern.kind === b.pattern.kind) {
+      score += 2;
+      // Bonus for matching name within same kind
+      if (a.pattern.name && b.pattern.name && a.pattern.name === b.pattern.name) {
+        score += 1;
+      }
+    }
+    weights += 3;
+  } else if (a.pattern || b.pattern) {
+    // One has a pattern, the other doesn't — slight penalty
+    weights += 2;
+  }
+
+  return score / weights;
+}
+
+/**
+ * Compute bbox similarity (0-1) using IoU-like metric.
+ */
+export function bboxSimilarity(a: BBox01, b: BBox01): number {
+  // Intersection
+  const x1 = Math.max(a[0], b[0]);
+  const y1 = Math.max(a[1], b[1]);
+  const x2 = Math.min(a[0] + a[2], b[0] + b[2]);
+  const y2 = Math.min(a[1] + a[3], b[1] + b[3]);
+
+  const intersection = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+
+  // Union
+  const areaA = a[2] * a[3];
+  const areaB = b[2] * b[3];
+  const union = areaA + areaB - intersection;
+
+  if (union === 0) return 0;
+  return intersection / union;
+}

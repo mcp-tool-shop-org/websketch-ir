@@ -1,0 +1,87 @@
+{
+  "name": "@mcptoolshop/websketch-ir",
+  "version": "2.1.0",
+  "description": "Grammar-based representation of web UI for LLM consumption",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./grammar": {
+      "types": "./dist/grammar.d.ts",
+      "import": "./dist/grammar.js"
+    },
+    "./codegen": {
+      "types": "./dist/codegen/index.d.ts",
+      "import": "./dist/codegen/index.js"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "HANDBOOK.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 9",
+    "test": "node --experimental-vm-modules node_modules/vitest/vitest.mjs",
+    "test:run": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run",
+    "test:coverage": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run --coverage",
+    "coverage": "node --experimental-vm-modules node_modules/vitest/vitest.mjs run --coverage",
+    "bench": "node --experimental-vm-modules node_modules/vitest/vitest.mjs bench",
+    "validate": "npm run clean && npm run typecheck && npm run lint && npm run build && npm run test:run",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "websketch",
+    "ui-testing",
+    "web-automation",
+    "llm",
+    "ai-agents",
+    "browser-automation",
+    "ui-representation",
+    "ascii-art",
+    "diff",
+    "fingerprint"
+  ],
+  "author": "MCP Tool Shop",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcp-tool-shop-org/websketch-ir.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcp-tool-shop-org/websketch-ir/issues"
+  },
+  "homepage": "https://github.com/mcp-tool-shop-org/websketch-ir#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.3",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.39.3",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.56.1",
+    "vitest": "^4.0.18"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
