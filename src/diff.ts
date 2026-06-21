@@ -49,6 +49,20 @@ export interface NodeChange {
     dw: number;
     dh: number;
   };
+  /**
+   * Deterministic structural path of the affected node (from the flattened
+   * tree, e.g. `body/main[0]/button`). Stable across captures for the same
+   * structural position, so integrators can baseline or suppress changes by
+   * position. Prefers the B-side path, falling back to A-side for removals.
+   */
+  path?: string;
+  /**
+   * Stable node identity handle, taken from the underlying `UINode.id` when
+   * present (B-side preferred, A-side fallback). Lets integrators baseline or
+   * suppress changes by handle independent of structural position. Undefined
+   * when neither matched node carries an `id`.
+   */
+  nodeId?: string;
   /** Human-readable description */
   description: string;
 }
@@ -409,6 +423,11 @@ function classifyMatchChanges(
   const a = nodeA.node;
   const b = nodeB.node;
 
+  // Stable identity for every change emitted from this pair: prefer the B-side
+  // (post-change) handle, fall back to A-side for symmetry.
+  const path = nodeB.path ?? nodeA.path;
+  const nodeId = (b.id || a.id) || undefined;
+
   const delta = computeBboxDelta(a.bbox, b.bbox);
   const moved = Math.abs(delta.dx) > options.moveThreshold || Math.abs(delta.dy) > options.moveThreshold;
   const resized = Math.abs(delta.dw) > options.resizeThreshold || Math.abs(delta.dh) > options.resizeThreshold;
@@ -421,6 +440,8 @@ function classifyMatchChanges(
       nodeB: b,
       similarity,
       bboxDelta: delta,
+      path,
+      nodeId,
       description: `${a.role}${a.semantic ? `:${a.semantic}` : ""} moved by (${(delta.dx * 100).toFixed(1)}%, ${(delta.dy * 100).toFixed(1)}%)`,
     });
   }
@@ -433,6 +454,8 @@ function classifyMatchChanges(
       nodeB: b,
       similarity,
       bboxDelta: delta,
+      path,
+      nodeId,
       description: `${a.role}${a.semantic ? `:${a.semantic}` : ""} resized by (${(delta.dw * 100).toFixed(1)}%, ${(delta.dh * 100).toFixed(1)}%)`,
     });
   }
@@ -444,6 +467,8 @@ function classifyMatchChanges(
       nodeA: a,
       nodeB: b,
       similarity,
+      path,
+      nodeId,
       description: `Role changed from ${a.role} to ${b.role}`,
     });
   }
@@ -457,6 +482,8 @@ function classifyMatchChanges(
       nodeA: a,
       nodeB: b,
       similarity,
+      path,
+      nodeId,
       description: `${a.role}${a.semantic ? `:${a.semantic}` : ""} text changed (${aLen} → ${bLen} chars)`,
     });
   }
@@ -468,6 +495,8 @@ function classifyMatchChanges(
       nodeA: a,
       nodeB: b,
       similarity,
+      path,
+      nodeId,
       description: `${a.role}${a.semantic ? `:${a.semantic}` : ""} interactive: ${a.interactive} → ${b.interactive}`,
     });
   }
@@ -481,6 +510,8 @@ function classifyMatchChanges(
       nodeA: a,
       nodeB: b,
       similarity,
+      path,
+      nodeId,
       description: `${a.role}${a.semantic ? `:${a.semantic}` : ""} children: ${aChildCount} → ${bChildCount}`,
     });
   }
@@ -596,6 +627,8 @@ export function diff(
     changes.push({
       type: "added",
       nodeB: flat.node,
+      path: flat.path,
+      nodeId: flat.node.id || undefined,
       description: `Added ${flat.node.role}${flat.node.semantic ? `:${flat.node.semantic}` : ""} at (${(flat.node.bbox[0] * 100).toFixed(0)}%, ${(flat.node.bbox[1] * 100).toFixed(0)}%)`,
     });
   }
@@ -605,6 +638,8 @@ export function diff(
     changes.push({
       type: "removed",
       nodeA: flat.node,
+      path: flat.path,
+      nodeId: flat.node.id || undefined,
       description: `Removed ${flat.node.role}${flat.node.semantic ? `:${flat.node.semantic}` : ""} from (${(flat.node.bbox[0] * 100).toFixed(0)}%, ${(flat.node.bbox[1] * 100).toFixed(0)}%)`,
     });
   }

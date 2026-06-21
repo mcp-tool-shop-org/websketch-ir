@@ -443,30 +443,84 @@ export function renderStructure(
 }
 
 /**
- * Render an LLM-optimized view with full detail.
+ * Options for {@link renderForLLM}.
+ *
+ * All fields are optional; omitting the options object (or any field)
+ * reproduces the historical fixed 80x24 output with the full metadata
+ * header, timestamp line, and legend.
  */
-export function renderForLLM(capture: WebSketchCapture): string {
-  // Guard against non-finite / out-of-range timestamps so toISOString()
-  // never throws a RangeError on bad capture metadata.
-  const t = Number(capture.timestamp_ms);
-  const stamp = Number.isFinite(t) ? new Date(t).toISOString() : "unknown";
+export interface RenderForLLMOptions {
+  /** Grid width in characters (default: 80) */
+  width?: number;
+  /** Grid height in characters (default: 24) */
+  height?: number;
+  /** Include the URL/viewport/timestamp header block (default: true) */
+  includeMetadata?: boolean;
+  /** Include the role-abbreviation legend at the bottom (default: true) */
+  includeLegend?: boolean;
+  /** Include the "Captured:" timestamp line within the header (default: true) */
+  includeTimestamp?: boolean;
+  /** Restrict rendered nodes to these roles (default: all important roles) */
+  showRoles?: UIRole[];
+}
 
-  const header = [
-    `URL: ${capture.url}`,
-    `Viewport: ${capture.viewport.w_px}x${capture.viewport.h_px}`,
-    `Captured: ${stamp}`,
-    "─".repeat(80),
-  ].join("\n");
+/**
+ * Render an LLM-optimized view with full detail.
+ *
+ * With no options, emits the historical fixed 80x24 layout: a metadata
+ * header (URL / viewport / timestamp), the ASCII grid, then the legend.
+ * Pass {@link RenderForLLMOptions} to resize the grid or trim any of those
+ * sections.
+ */
+export function renderForLLM(
+  capture: WebSketchCapture,
+  options: RenderForLLMOptions = {}
+): string {
+  const width = options.width ?? 80;
+  const height = options.height ?? 24;
+  const includeMetadata = options.includeMetadata ?? true;
+  const includeLegend = options.includeLegend ?? true;
+  const includeTimestamp = options.includeTimestamp ?? true;
 
-  const ascii = renderAscii(capture, {
-    width: 80,
-    height: 24,
+  const asciiOptions: AsciiRenderOptions = {
+    width,
+    height,
     showSemantics: true,
     showTextLen: true,
     borderStyle: "box",
-  });
+  };
+  if (options.showRoles) {
+    asciiOptions.showRoles = options.showRoles;
+  }
 
-  const legend = generateLegend();
+  const ascii = renderAscii(capture, asciiOptions);
 
-  return `${header}\n${ascii}\n${"─".repeat(80)}\n${legend}`;
+  const sections: string[] = [];
+
+  if (includeMetadata) {
+    const headerLines = [
+      `URL: ${capture.url}`,
+      `Viewport: ${capture.viewport.w_px}x${capture.viewport.h_px}`,
+    ];
+
+    if (includeTimestamp) {
+      // Guard against non-finite / out-of-range timestamps so toISOString()
+      // never throws a RangeError on bad capture metadata.
+      const t = Number(capture.timestamp_ms);
+      const stamp = Number.isFinite(t) ? new Date(t).toISOString() : "unknown";
+      headerLines.push(`Captured: ${stamp}`);
+    }
+
+    headerLines.push("─".repeat(width));
+    sections.push(headerLines.join("\n"));
+  }
+
+  sections.push(ascii);
+
+  if (includeLegend) {
+    sections.push("─".repeat(width));
+    sections.push(generateLegend());
+  }
+
+  return sections.join("\n");
 }

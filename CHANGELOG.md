@@ -1,11 +1,33 @@
 # Changelog
 
-## 2.2.0 — 2026-06-21
+## 2.3.0 — 2026-06-21
 
-Resurrection + health-pass release. The package was revived from the prototypes
-seed vault into its own standalone repo and put through a security/correctness
-health pass. Rolls up the prepared-but-never-published 2.0.1 and 2.1.0 work —
-npm's last published version was 2.0.0.
+Resurrection + health-pass + feature release. The package was revived from the
+prototypes seed vault into its own standalone repo, put through a security /
+correctness / robustness health pass, and given an "addressability + LLM-agent
+ergonomics" feature bundle. Rolls up the prepared-but-never-published 2.0.1 and
+2.1.0 work — npm's last published version was 2.0.0.
+
+### Added — addressability & LLM-agent ergonomics
+- **ID + containment resolution**: `findById`, `getPath`, `getParent`,
+  `findAncestor`, and `queryWithin` — resolve a content-addressed id back to a
+  node and reason about UI structure ("the INPUTs inside this FORM") without
+  hand-rolling a DFS-with-path.
+- **`renderForLLM` options** (`RenderForLLMOptions`): grid size, and toggles for
+  the metadata header, timestamp line (which otherwise busts prompt caching),
+  legend, and a role filter. No-arg calls are byte-identical to before.
+- **Addressable JSON**: `renderJSON` gains `includePath`/`includeId`, and a new
+  `renderJSONFlat` emits a flat array of interactive nodes with stable path
+  handles — the natural shape for a tool-call menu.
+- **`formatDiffForLLM` is now exported from the package root** (was reachable
+  only via the `/codegen` subpath), and `NodeChange` carries `path`/`nodeId`
+  so changes can be baselined and suppressed by stable handle.
+- **`fingerprintCapture` / `fingerprintLayout` accept `HashOptions`** for
+  semantic-only or structure-only fingerprints (layout stays text-agnostic).
+- **`assertValidCapture`**: a throwing validator for in-memory captures (the
+  counterpart to `parseCapture`'s string path), plus `createNode` now mints a
+  deterministic empty placeholder id (finalized by `assignNodeIds`) instead of
+  a `Math.random` value — builder output is reproducible for snapshot tests.
 
 ### Security
 - **Input-size limits are now actually enforced.** `parseCapture` previously

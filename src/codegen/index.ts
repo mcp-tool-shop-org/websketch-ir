@@ -23,6 +23,7 @@
 export type { EmitHTMLOptions } from "./html.js";
 export { emitHTML, emitNodeHTML, roleToElement } from "./html.js";
 
+export type { RenderForLLMOptions } from "../render/ascii.js";
 export {
   renderAscii,
   renderForLLM,
@@ -31,8 +32,8 @@ export {
   generateLegend,
 } from "../render/ascii.js";
 
-export type { RenderJSONOptions, JSONNode } from "../render/json.js";
-export { renderJSON } from "../render/json.js";
+export type { RenderJSONOptions, JSONNode, RenderJSONFlatEntry } from "../render/json.js";
+export { renderJSON, renderJSONFlat } from "../render/json.js";
 
 export type { RenderMarkdownOptions } from "../render/markdown.js";
 export { renderMarkdown } from "../render/markdown.js";

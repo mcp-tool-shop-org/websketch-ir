@@ -622,45 +622,76 @@ export function parseCapture(
   const issues = validateCapture(data, limits);
 
   if (issues.length > 0) {
-    // Check if it's a version issue specifically
-    const versionIssue = issues.find((i) => i.path === "version" && i.received !== "undefined");
-    const supportedVersionsList = [...SUPPORTED_SCHEMA_VERSIONS].map((v) => `"${v}"`).join(", ");
-    if (versionIssue && !SUPPORTED_SCHEMA_VERSIONS.has(versionIssue.received.replace(/^"|"$/g, ""))) {
-      throw new WebSketchException({
-        code: "WS_UNSUPPORTED_VERSION",
-        message: `Unsupported capture version: ${versionIssue.received}`,
-        expected: supportedVersionsList,
-        received: versionIssue.received,
-        hint: `This version of websketch-ir supports versions: ${supportedVersionsList}.`,
-      });
-    }
-
-    // Check if it's a limit exceeded issue
-    const limitIssue = issues.find(
-      (i) => i.message.includes("exceeds maxNodes") || i.message.includes("exceeds maxDepth"),
-    );
-    if (limitIssue) {
-      throw new WebSketchException({
-        code: "WS_LIMIT_EXCEEDED",
-        message: limitIssue.message,
-        path: limitIssue.path,
-        expected: limitIssue.expected,
-        received: limitIssue.received,
-        hint: "The capture exceeds configured resource limits. Try increasing limits or reducing capture complexity.",
-      });
-    }
-
-    // General validation error
-    const wsError: WebSketchValidationError = {
-      code: "WS_INVALID_CAPTURE",
-      message: `Invalid capture: ${issues.length} validation issue${issues.length > 1 ? "s" : ""} found`,
-      details: issues.slice(0, 5).map((i) => `${i.path}: ${i.message}`).join("; "),
-      hint: "Check the capture JSON against the WebSketchCapture schema.",
-      issues,
-    };
-    throw new WebSketchException(wsError);
+    throwForValidationIssues(issues);
   }
 
+  return data as WebSketchCapture;
+}
+
+/**
+ * Throw the appropriate WebSketchException for a non-empty validation issues
+ * array — version issues become WS_UNSUPPORTED_VERSION, resource-limit issues
+ * become WS_LIMIT_EXCEEDED, everything else becomes WS_INVALID_CAPTURE. Shared
+ * by {@link parseCapture} and {@link assertValidCapture}.
+ */
+function throwForValidationIssues(issues: WebSketchValidationIssue[]): never {
+  // Check if it's a version issue specifically
+  const versionIssue = issues.find((i) => i.path === "version" && i.received !== "undefined");
+  const supportedVersionsList = [...SUPPORTED_SCHEMA_VERSIONS].map((v) => `"${v}"`).join(", ");
+  if (versionIssue && !SUPPORTED_SCHEMA_VERSIONS.has(versionIssue.received.replace(/^"|"$/g, ""))) {
+    throw new WebSketchException({
+      code: "WS_UNSUPPORTED_VERSION",
+      message: `Unsupported capture version: ${versionIssue.received}`,
+      expected: supportedVersionsList,
+      received: versionIssue.received,
+      hint: `This version of websketch-ir supports versions: ${supportedVersionsList}.`,
+    });
+  }
+
+  // Check if it's a limit exceeded issue
+  const limitIssue = issues.find(
+    (i) => i.message.includes("exceeds maxNodes") || i.message.includes("exceeds maxDepth"),
+  );
+  if (limitIssue) {
+    throw new WebSketchException({
+      code: "WS_LIMIT_EXCEEDED",
+      message: limitIssue.message,
+      path: limitIssue.path,
+      expected: limitIssue.expected,
+      received: limitIssue.received,
+      hint: "The capture exceeds configured resource limits. Try increasing limits or reducing capture complexity.",
+    });
+  }
+
+  // General validation error
+  const wsError: WebSketchValidationError = {
+    code: "WS_INVALID_CAPTURE",
+    message: `Invalid capture: ${issues.length} validation issue${issues.length > 1 ? "s" : ""} found`,
+    details: issues.slice(0, 5).map((i) => `${i.path}: ${i.message}`).join("; "),
+    hint: "Check the capture JSON against the WebSketchCapture schema.",
+    issues,
+  };
+  throw new WebSketchException(wsError);
+}
+
+/**
+ * Validate an already-parsed (in-memory) capture object and throw a structured
+ * {@link WebSketchException} if it is invalid — the throwing counterpart of
+ * {@link validateCapture}, mirroring {@link parseCapture}'s error branching but
+ * for objects that did not come from a JSON string.
+ *
+ * @returns the input narrowed to WebSketchCapture when valid.
+ * @throws WebSketchException (WS_INVALID_CAPTURE / WS_UNSUPPORTED_VERSION /
+ *   WS_LIMIT_EXCEEDED) when invalid.
+ */
+export function assertValidCapture(
+  data: unknown,
+  limits?: Partial<WebSketchLimits>,
+): WebSketchCapture {
+  const issues = validateCapture(data, limits);
+  if (issues.length > 0) {
+    throwForValidationIssues(issues);
+  }
   return data as WebSketchCapture;
 }
 

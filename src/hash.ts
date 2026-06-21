@@ -259,9 +259,16 @@ export function hashNodeDeep(
 /**
  * Compute a fingerprint for an entire capture.
  * This is a fast check for "is this page the same?"
+ *
+ * @param options - hashing options threaded through to {@link hashNodeDeep}.
+ *   Omitted (or omitted keys) fall back to {@link DEFAULT_HASH_OPTIONS}, so a
+ *   no-arg call produces the same fingerprint as before this option existed.
  */
-export function fingerprintCapture(capture: WebSketchCapture): string {
-  const rootHash = hashNodeDeep(capture.root);
+export function fingerprintCapture(
+  capture: WebSketchCapture,
+  options: HashOptions = {},
+): string {
+  const rootHash = hashNodeDeep(capture.root, options);
 
   // Include viewport aspect ratio (different layouts = different fingerprint).
   // Normalize non-finite aspect to 0 so the fingerprint never contains "NaN"/"Infinity".
@@ -274,12 +281,24 @@ export function fingerprintCapture(capture: WebSketchCapture): string {
 /**
  * Compute a layout-only fingerprint (ignores text content).
  * Useful for detecting structural changes while ignoring content updates.
+ *
+ * @param options - hashing options threaded through to {@link hashNodeDeep}.
+ *   The layout override `{ includeText: false, includeName: false }` always
+ *   wins on those two keys — a layout fingerprint stays text- and name-agnostic
+ *   regardless of caller input — while the caller controls every other key.
+ *   A no-arg call produces the same fingerprint as before this option existed.
  */
-export function fingerprintLayout(capture: WebSketchCapture): string {
-  const rootHash = hashNodeDeep(capture.root, {
+export function fingerprintLayout(
+  capture: WebSketchCapture,
+  options: HashOptions = {},
+): string {
+  // Caller options first, then the layout override wins on text/name.
+  const layoutOptions: HashOptions = {
+    ...options,
     includeText: false,
     includeName: false,
-  });
+  };
+  const rootHash = hashNodeDeep(capture.root, layoutOptions);
 
   // Normalize non-finite aspect to 0 so the fingerprint never contains "NaN"/"Infinity".
   const aspect = Number.isFinite(capture.viewport.aspect) ? capture.viewport.aspect : 0;

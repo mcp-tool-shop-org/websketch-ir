@@ -52,6 +52,14 @@ export {
   // Builder / factory
   createNode,
   createCapture,
+  // Addressability / relationships
+  findById,
+  getPath,
+  getParent,
+  findAncestor,
+  queryWithin,
+  // Library version
+  LIBRARY_VERSION,
 } from "./grammar.js";
 
 // Text processing
@@ -84,7 +92,7 @@ export {
 } from "./hash.js";
 
 // ASCII rendering
-export type { AsciiRenderOptions } from "./render/ascii.js";
+export type { AsciiRenderOptions, RenderForLLMOptions } from "./render/ascii.js";
 export {
   renderAscii,
   renderNodeAscii,
@@ -93,6 +101,10 @@ export {
   generateLegend,
 } from "./render/ascii.js";
 
+// JSON rendering (LLM tool-calling)
+export type { RenderJSONOptions, JSONNode, RenderJSONFlatEntry } from "./render/json.js";
+export { renderJSON, renderJSONFlat } from "./render/json.js";
+
 // Diff
 export type {
   ChangeType,
@@ -100,6 +112,7 @@ export type {
   DiffSummary,
   DiffResult,
   DiffOptions,
+  DiffTruncation,
   FlatNode,
   PreparedCapture,
 } from "./diff.js";
@@ -108,6 +121,7 @@ export {
   prepareDiff,
   formatDiff,
   formatDiffJson,
+  formatDiffForLLM,
 } from "./diff.js";
 
 // Schema version compatibility
@@ -130,6 +144,7 @@ export {
   DEFAULT_LIMITS,
   validateCapture,
   isValidCapture,
+  assertValidCapture,
   parseCapture,
   formatWebSketchError,
   isWebSketchException,

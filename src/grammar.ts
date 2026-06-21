@@ -12,7 +12,7 @@
  * Single source of truth for the library version, stamped into capture
  * compiler metadata. Keep in sync with package.json `version`.
  */
-export const LIBRARY_VERSION = "2.2.0";
+export const LIBRARY_VERSION = "2.3.0";
 
 // =============================================================================
 // Bounding Box (viewport-relative 0-1)
@@ -622,6 +622,145 @@ export function findByRole(root: UINode, role: UIRole): UINode | undefined {
 }
 
 // =============================================================================
+// Addressability / Relationship API
+// =============================================================================
+
+/**
+ * Return the first node whose `id` matches the given id (DFS).
+ * Convenience wrapper around {@link findFirst} for id-based addressing.
+ *
+ * @param root - The root node to search from
+ * @param id - The node id to match
+ * @returns The first node with the specified id, or undefined if none match
+ */
+export function findById(root: UINode, id: string): UINode | undefined {
+  return findFirst(root, (n) => n.id === id);
+}
+
+/**
+ * Compute the index path from `root` to `target`, matched by reference identity.
+ * The path is an array of child indices: following `children[path[0]]`,
+ * `children[path[1]]`, ... from the root reaches `target`.
+ *
+ * Returns `[]` when `target` is `root` itself, and `undefined` when `target`
+ * is not present anywhere in the tree.
+ *
+ * @param root - The root node to search from
+ * @param target - The node to locate (matched by reference, not by id)
+ * @returns The index path from root to target, or undefined if not found
+ */
+export function getPath(root: UINode, target: UINode): number[] | undefined {
+  if (root === target) {
+    return [];
+  }
+  type Frame = { node: UINode; path: number[] };
+  const stack: Frame[] = [{ node: root, path: [] }];
+  while (stack.length > 0) {
+    const frame = stack.pop();
+    if (frame === undefined) break;
+    const { node, path } = frame;
+    if (node.children) {
+      for (let i = node.children.length - 1; i >= 0; i--) {
+        const child = node.children[i];
+        const childPath = [...path, i];
+        if (child === target) {
+          return childPath;
+        }
+        stack.push({ node: child, path: childPath });
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Return the parent of `target` (matched by reference identity).
+ * The root has no parent, so `undefined` is returned when `target` is `root`
+ * or is not present in the tree.
+ *
+ * @param root - The root node to search from
+ * @param target - The node whose parent to find (matched by reference)
+ * @returns The parent node, or undefined if target is the root or not found
+ */
+export function getParent(root: UINode, target: UINode): UINode | undefined {
+  const stack: UINode[] = [root];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node === undefined) break;
+    if (node.children) {
+      for (let i = node.children.length - 1; i >= 0; i--) {
+        const child = node.children[i];
+        if (child === target) {
+          return node;
+        }
+        stack.push(child);
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Return the nearest ancestor of `target` (matched by reference) that satisfies
+ * `predicate`. Walks upward from `target`'s parent toward the root, returning
+ * the first match. `target` itself is never considered.
+ *
+ * @param root - The root node containing the tree
+ * @param target - The node whose ancestors to search (matched by reference)
+ * @param predicate - Function that returns true for the desired ancestor
+ * @returns The nearest matching ancestor, or undefined if none match
+ */
+export function findAncestor(
+  root: UINode,
+  target: UINode,
+  predicate: (node: UINode) => boolean,
+): UINode | undefined {
+  let current = getParent(root, target);
+  while (current) {
+    if (predicate(current)) {
+      return current;
+    }
+    current = getParent(root, current);
+  }
+  return undefined;
+}
+
+/**
+ * Return every node of the given `role` that is a descendant of some node
+ * matching `containerPredicate` (e.g., every INPUT inside a FORM).
+ *
+ * Results are in DFS order and de-duplicated by reference, so nested matching
+ * containers never yield the same node twice.
+ *
+ * @param root - The root node to search from
+ * @param containerPredicate - Identifies container nodes to scope the search
+ * @param role - The UIRole descendants must have to be included
+ * @returns Matching descendant nodes in DFS order
+ */
+export function queryWithin(
+  root: UINode,
+  containerPredicate: (node: UINode) => boolean,
+  role: UIRole,
+): UINode[] {
+  const result: UINode[] = [];
+  const seen = new Set<UINode>();
+  for (const container of flattenNodes(root)) {
+    if (!containerPredicate(container) || !container.children) {
+      continue;
+    }
+    for (const child of container.children) {
+      for (const descendant of flattenNodes(child)) {
+        if (descendant.role === role && !seen.has(descendant)) {
+          seen.add(descendant);
+          result.push(descendant);
+        }
+      }
+    }
+  }
+  return result;
+}
+
+// =============================================================================
 // Builder / Factory API
 // =============================================================================
 
@@ -630,10 +769,12 @@ export function findByRole(root: UINode, role: UIRole): UINode | undefined {
  * Only `role` and `bbox` are required; all other fields use defaults
  * (visible: true, interactive: false).
  *
- * The generated `id` is a random placeholder (`node-<role>-<rand>`), NOT a
- * stable or content-addressed id. It is intended to be replaced by
+ * The default `id` is an empty-string placeholder (`""`), NOT a stable or
+ * content-addressed id. This keeps `createNode` deterministic — its output
+ * depends only on its inputs. The placeholder is intended to be finalized by
  * {@link assignNodeIds} (from `hash.ts`), which assigns deterministic,
- * content-addressed ids once the tree is assembled.
+ * content-addressed ids once the tree is assembled. Pass `options.id` to
+ * supply an explicit id and bypass the placeholder.
  *
  * @param role - The UI role for this node
  * @param bbox - Bounding box in viewport-relative [0,1] coordinates
@@ -646,7 +787,7 @@ export function createNode(
   options?: Partial<UINode>,
 ): UINode {
   return {
-    id: `node-${role.toLowerCase()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: "",
     role,
     bbox,
     interactive: false,

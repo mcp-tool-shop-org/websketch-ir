@@ -223,10 +223,12 @@ describe("createNode", () => {
     expect(node.interactive).toBe(false);
   });
 
-  it("generates a string id", () => {
+  it("uses a deterministic empty placeholder id (finalized by assignNodeIds)", () => {
     const node = createNode("BUTTON", [0.1, 0.1, 0.2, 0.1]);
     expect(typeof node.id).toBe("string");
-    expect(node.id.length).toBeGreaterThan(0);
+    expect(node.id).toBe("");
+    // Deterministic: equal inputs produce equal output (no Math.random)
+    expect(createNode("BUTTON", [0.1, 0.1, 0.2, 0.1]).id).toBe(node.id);
   });
 
   it("applies optional overrides", () => {
@@ -249,9 +251,9 @@ describe("createNode", () => {
     expect(parent.children![0]).toBe(child);
   });
 
-  it("id contains role name (lowercase)", () => {
-    const node = createNode("SECTION", [0, 0, 1, 1]);
-    expect(node.id).toContain("section");
+  it("respects an explicit id override", () => {
+    const node = createNode("SECTION", [0, 0, 1, 1], { id: "custom-id" });
+    expect(node.id).toBe("custom-id");
   });
 });
 
