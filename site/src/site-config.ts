@@ -10,7 +10,7 @@ export const config: SiteConfig = {
   footerText: 'MIT Licensed — built by <a href="https://github.com/mcp-tool-shop-org" style="color:var(--color-muted);text-decoration:underline">mcp-tool-shop-org</a>',
 
   hero: {
-    badge: 'v2.1.0 · 22 UI primitives · zero runtime deps',
+    badge: 'v2.2.0 · 22 UI primitives · zero runtime deps',
     headline: 'WebSketch IR',
     headlineAccent: 'stop treating webpages like pictures.',
     description: 'A grammar-based intermediate representation that compiles DOM soup into a small, fixed vocabulary of semantic UI primitives. LLMs reason about layouts without vision.',
@@ -62,21 +62,6 @@ console.log(formatDiff(result));
 // { added: 2, removed: 1, moved: 0, resized: 3 }
 
 const fp = fingerprintCapture(capture);` },
-      ],
-    },
-    {
-      kind: 'data-table',
-      id: 'ecosystem',
-      title: 'Ecosystem',
-      subtitle: 'WebSketch IR is the core — these tools build on it.',
-      columns: ['Package', 'Role'],
-      rows: [
-        ['websketch-ir', 'Core IR grammar and serialization (this repo)'],
-        ['websketch-vscode', 'VS Code extension — capture pages from your editor'],
-        ['websketch-cli', 'CLI for rendering, fingerprinting, and diffing'],
-        ['websketch-extension', 'Chrome extension for capturing pages'],
-        ['websketch-mcp', 'MCP server for LLM agent integration'],
-        ['websketch-demo', 'Interactive demo and visualization'],
       ],
     },
     {

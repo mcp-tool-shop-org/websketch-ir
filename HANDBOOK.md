@@ -584,40 +584,6 @@ if (baseline !== current) {
 
 This pattern is especially useful for catching unintended layout shifts after CSS or component changes.
 
-### MCP tool integration
-
-The `websketch-mcp` server exposes WebSketch IR operations as MCP tools. LLM agents can capture pages, validate captures, render wireframes, diff captures, and compute fingerprints -- all through the standard MCP tool-calling protocol.
-
-Typical agent workflow:
-
-1. Agent calls `websketch_capture` to capture the current page
-2. Agent calls `websketch_render` to get an ASCII wireframe
-3. Agent reasons about the wireframe to decide next actions
-4. After taking action, agent calls `websketch_diff` to verify the expected change occurred
-
-### Working with the CLI
-
-The `websketch-cli` package provides shell commands for all core operations:
-
-```bash
-# Validate a capture file
-websketch validate capture.json
-
-# Render to ASCII
-websketch render capture.json
-
-# Diff two captures
-websketch diff before.json after.json
-
-# Compute fingerprint
-websketch fingerprint capture.json
-
-# Bundle multiple captures
-websketch bundle a.json b.json -o bundle.ws.json
-```
-
-All commands accept `--json` for machine-readable output using the JSON envelope format.
-
 ---
 
 ## FAQ

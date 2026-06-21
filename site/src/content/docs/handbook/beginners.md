@@ -50,7 +50,7 @@ The library is pure ESM. If you are using CommonJS, you will need a dynamic `imp
 
 **Step 2: Create a capture by hand**
 
-In a real project, captures come from the [Chrome extension](https://github.com/mcp-tool-shop-org/websketch-extension) or [MCP server](https://github.com/mcp-tool-shop-org/websketch-mcp). For this walkthrough, build one manually:
+In a real project, captures are produced by a DOM-walking capture step that compiles a live page into the WebSketch grammar. For this walkthrough, build one manually:
 
 ```typescript
 import {
@@ -158,15 +158,6 @@ Now that you have parsed your first capture, explore these handbook pages to go 
 - [API Reference](/websketch-ir/handbook/api-reference/) -- every function, type, and option
 - [Diffing & Fingerprinting](/websketch-ir/handbook/diffing-and-fingerprinting/) -- structural comparison strategies
 - [Codegen & Rendering](/websketch-ir/handbook/codegen-and-rendering/) -- HTML output, ASCII wireframes, LLM views
-
-For real-world capture workflows, check out the ecosystem tools:
-
-| Tool | What it does |
-|------|-------------|
-| [websketch-cli](https://github.com/mcp-tool-shop-org/websketch-cli) | CLI for rendering, fingerprinting, and diffing captures |
-| [websketch-extension](https://github.com/mcp-tool-shop-org/websketch-extension) | Chrome extension for in-browser capture |
-| [websketch-mcp](https://github.com/mcp-tool-shop-org/websketch-mcp) | MCP server so LLM agents can capture pages |
-| [websketch-vscode](https://github.com/mcp-tool-shop-org/websketch-vscode) | Capture pages right from VS Code |
 
 ## Glossary
 

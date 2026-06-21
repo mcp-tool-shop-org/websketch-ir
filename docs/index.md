@@ -34,17 +34,6 @@ const fingerprint = fingerprintCapture(capture);
 const changes = diff(captureA, captureB);
 ```
 
-## Ecosystem
-
-| Package | Role |
-|---------|------|
-| **websketch-ir** | Core IR grammar and serialization (this package) |
-| [websketch-vscode](https://github.com/mcp-tool-shop-org/websketch-vscode) | VS Code extension -- capture pages from your editor |
-| [websketch-cli](https://github.com/mcp-tool-shop-org/websketch-cli) | CLI for rendering, fingerprinting, and diffing |
-| [websketch-extension](https://github.com/mcp-tool-shop-org/websketch-extension) | Chrome extension for capturing pages |
-| [websketch-mcp](https://github.com/mcp-tool-shop-org/websketch-mcp) | MCP server for LLM agent integration |
-| [websketch-demo](https://github.com/mcp-tool-shop-org/websketch-demo) | Interactive demo and visualization |
-
 ## Links
 
 - [npm package](https://www.npmjs.com/package/@mcptoolshop/websketch-ir)

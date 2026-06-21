@@ -70,11 +70,3 @@ const structure = renderStructure(capture, 60, 16);
 - **renderForLLM** — Feed directly into an LLM context window with full metadata
 - **renderStructure** — Minimal view when you only need the layout skeleton
 
-## Ecosystem
-
-| Package | Role |
-|---------|------|
-| [websketch-cli](https://github.com/mcp-tool-shop-org/websketch-cli) | CLI for rendering, fingerprinting, and diffing |
-| [websketch-extension](https://github.com/mcp-tool-shop-org/websketch-extension) | Chrome extension for capture |
-| [websketch-vscode](https://github.com/mcp-tool-shop-org/websketch-vscode) | VS Code extension |
-| [websketch-mcp](https://github.com/mcp-tool-shop-org/websketch-mcp) | MCP server for LLM agents |

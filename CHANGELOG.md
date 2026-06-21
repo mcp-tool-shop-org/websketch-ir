@@ -1,5 +1,49 @@
 # Changelog
 
+## 2.2.0 — 2026-06-21
+
+Resurrection + health-pass release. The package was revived from the prototypes
+seed vault into its own standalone repo and put through a security/correctness
+health pass. Rolls up the prepared-but-never-published 2.0.1 and 2.1.0 work —
+npm's last published version was 2.0.0.
+
+### Security
+- **Input-size limits are now actually enforced.** `parseCapture` previously
+  computed but never checked line/byte counts. It now enforces `maxInputChars`
+  (1M, checked first), `maxInputLines` (50K), and `maxInputBytes` (2MB), each
+  throwing `WS_LIMIT_EXCEEDED`.
+- **HTML attribute-name injection fixed.** `emitHTML` sanitizes dynamic
+  attribute-name fragments (e.g. `data-wsk-bind-<property>`) to a strict
+  allowlist and drops malformed keys, so an untrusted binding property can no
+  longer inject attributes or event handlers.
+- **Markdown injection fixed.** `renderMarkdown` escapes markdown-significant
+  characters in `semantic` labels and capture metadata (URL/viewport).
+- Validation issue collection is now capped for flat array fan-out, not only
+  deep recursion.
+
+### Fixed
+- **Text-signal hash consistency.** `createTextSignal` (async) and
+  `createTextSignalSync` now both produce FNV-1a 64-bit `TextSignal.hash`
+  values; the async path previously used SHA-256, so identical text mis-diffed
+  across capture paths.
+- `bboxSimilarity` returns 1 for two coincident zero-area boxes (collapsed
+  elements) instead of 0.
+- Circular-reference validation tracks the active recursion path, so a legal
+  acyclic DAG is no longer falsely reported as circular.
+- `createCapture` stamps the live library version instead of a hardcoded `2.0.1`.
+- Defensive recursion ceilings on `hashNodeDeep` and `renderJSON`; a per-role
+  comparison budget in the large-tree diff matcher.
+
+### Changed / removed
+- Removed references to unbuilt sibling tools (cli, mcp, vscode, extension,
+  demo) from the README, landing page, and docs.
+- Removed the dead `TEXT_THRESHOLDS.PARAGRAPH` constant and stale `@deprecated`
+  tags on the live schema-version helpers; corrected the `hash.ts` algorithm
+  note to FNV-1a.
+- npm publishing migrated to OIDC Trusted Publishing via `release.yml` (no
+  tokens, with provenance); removed `dependabot.yml`; added `package-lock.json`
+  to CI push paths.
+
 ## 2.1.0 — 2026-03-28
 
 ### Added
@@ -19,7 +63,7 @@
 ### Fixed
 - Prototype pollution guard now sanitizes all nested objects (not just top-level)
 - TEXT_THRESHOLDS: PARAGRAPH threshold raised to 500 (was equal to SENTENCE at 150)
-- Diff O(n²) safeguard: `maxDiffNodes` option (default 2000) prevents runaway matching
+- Diff O(n²) safeguard: node matching switches to role-bucketed comparison above 2000 nodes per side; the optional `maxDiffNodes` truncation cap defaults to unlimited
 - Handler collision: same-event handlers concatenated with `;` instead of overwriting
 - ASCII renderer: container labels render inside boxes, not on border
 - Hash: null-byte field separators prevent cross-field collisions

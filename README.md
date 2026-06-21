@@ -43,19 +43,6 @@ Think of it as an "assembly language" for web UIs. You get the structure, the ge
 | **64-bit Fingerprinting** | FNV-1a 64-bit hashing for fast equality checks with extremely low collision probability |
 | **Zero Dependencies** | Pure TypeScript, no runtime deps. ~43 KB on npm. Runs anywhere Node 20+ runs. |
 
-## The Ecosystem
-
-WebSketch IR is the core library. It's designed to slot into a larger toolchain:
-
-| Package | What it's for |
-|---------|--------------|
-| **websketch-ir** *(this repo)* | Core grammar, validation, hashing, diffing, rendering, codegen |
-| [websketch-vscode](https://github.com/mcp-tool-shop-org/websketch-vscode) | Capture pages right from VS Code |
-| [websketch-cli](https://github.com/mcp-tool-shop-org/websketch-cli) | CLI for rendering, fingerprinting, and diffing captures |
-| [websketch-extension](https://github.com/mcp-tool-shop-org/websketch-extension) | Chrome extension for in-browser capture |
-| [websketch-mcp](https://github.com/mcp-tool-shop-org/websketch-mcp) | MCP server so LLM agents can capture and reason about pages |
-| [websketch-demo](https://github.com/mcp-tool-shop-org/websketch-demo) | Interactive playground and visualization |
-
 ## Getting Started
 
 ```bash
