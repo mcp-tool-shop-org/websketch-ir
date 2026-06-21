@@ -129,9 +129,11 @@ export {
   WebSketchException,
   DEFAULT_LIMITS,
   validateCapture,
+  isValidCapture,
   parseCapture,
   formatWebSketchError,
   isWebSketchException,
+  getWebSketchError,
 } from "./errors.js";
 
 // Code generation

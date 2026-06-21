@@ -329,13 +329,16 @@ export function renderMarkdown(
   const lines: string[] = [];
 
   if (opts.includeMetadata) {
+    // Guard against non-finite / out-of-range timestamps so toISOString()
+    // never throws a RangeError on bad capture metadata.
+    const t = Number(capture.timestamp_ms);
+    const stamp = Number.isFinite(t) ? new Date(t).toISOString() : "unknown";
+
     lines.push(`> **URL:** ${escapeMd(capture.url)}`);
     lines.push(
       `> **Viewport:** ${escapeMd(String(capture.viewport.w_px))}x${escapeMd(String(capture.viewport.h_px))}`,
     );
-    lines.push(
-      `> **Captured:** ${new Date(capture.timestamp_ms).toISOString()}`,
-    );
+    lines.push(`> **Captured:** ${stamp}`);
     lines.push("");
   }
 

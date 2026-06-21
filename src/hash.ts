@@ -206,6 +206,12 @@ const MAX_HASH_DEPTH = 1000;
  * Compute structural hash for a node including children (recursive).
  * Children are sorted by position (y, then x) for stability.
  *
+ * The child comparator is total and NaN-safe: non-finite coordinates coerce to
+ * `Infinity` so they sort last deterministically rather than yielding
+ * implementation-defined order, and ties (equal or non-finite positions) fall
+ * back to comparing each child's shallow hash so the order stays reproducible
+ * regardless of the input child order.
+ *
  * @param depth - internal recursion depth (callers should omit). Recursion is
  *   capped at {@link MAX_HASH_DEPTH} as a defense against cyclic or
  *   pathologically deep inputs; callers should still validate tree depth.
@@ -221,13 +227,21 @@ export function hashNodeDeep(
     return shallowHash;
   }
 
+  // Coerce a coordinate to a finite, comparable value: non-finite (NaN/Infinity)
+  // sorts last deterministically instead of producing implementation-defined order.
+  const coord = (c: number): number => (Number.isFinite(c) ? c : Infinity);
+
   // Sort children by position for deterministic ordering
   const sortedChildren = [...node.children].sort((a, b) => {
-    // Primary sort: y position
-    const yDiff = a.bbox[1] - b.bbox[1];
-    if (Math.abs(yDiff) > BBOX_QUANT_STEP) return yDiff;
-    // Secondary sort: x position
-    return a.bbox[0] - b.bbox[0];
+    // Primary sort: y position (NaN-safe)
+    const yDiff = coord(a.bbox[1]) - coord(b.bbox[1]);
+    if (Number.isFinite(yDiff) && Math.abs(yDiff) > BBOX_QUANT_STEP) return yDiff;
+    // Secondary sort: x position (NaN-safe)
+    const xDiff = coord(a.bbox[0]) - coord(b.bbox[0]);
+    if (Number.isFinite(xDiff) && xDiff !== 0) return xDiff;
+    // Final tiebreaker: shallow hash, so equal/non-finite positions still order
+    // reproducibly regardless of input child order.
+    return hashNodeShallow(a, options).localeCompare(hashNodeShallow(b, options));
   });
 
   // Hash children recursively
@@ -249,8 +263,10 @@ export function hashNodeDeep(
 export function fingerprintCapture(capture: WebSketchCapture): string {
   const rootHash = hashNodeDeep(capture.root);
 
-  // Include viewport aspect ratio (different layouts = different fingerprint)
-  const aspectKey = capture.viewport.aspect.toFixed(2);
+  // Include viewport aspect ratio (different layouts = different fingerprint).
+  // Normalize non-finite aspect to 0 so the fingerprint never contains "NaN"/"Infinity".
+  const aspect = Number.isFinite(capture.viewport.aspect) ? capture.viewport.aspect : 0;
+  const aspectKey = aspect.toFixed(2);
 
   return hashSync(`${rootHash}|a:${aspectKey}`);
 }
@@ -265,7 +281,9 @@ export function fingerprintLayout(capture: WebSketchCapture): string {
     includeName: false,
   });
 
-  const aspectKey = capture.viewport.aspect.toFixed(2);
+  // Normalize non-finite aspect to 0 so the fingerprint never contains "NaN"/"Infinity".
+  const aspect = Number.isFinite(capture.viewport.aspect) ? capture.viewport.aspect : 0;
+  const aspectKey = aspect.toFixed(2);
   return hashSync(`${rootHash}|a:${aspectKey}`);
 }
 
@@ -279,8 +297,11 @@ export function fingerprintLayout(capture: WebSketchCapture): string {
  */
 export function generateNodeId(node: UINode, parentPath: string = ""): string {
   const hash = hashNodeShallow(node);
-  // Use first 12 chars of hash + position hint
-  const posHint = `${Math.round(node.bbox[0] * 100)}_${Math.round(node.bbox[1] * 100)}`;
+  // Use first 12 chars of hash + position hint. Sanitize non-finite coordinates
+  // to 0 so generated ids never contain "NaN".
+  const px = Number.isFinite(node.bbox[0]) ? Math.round(node.bbox[0] * 100) : 0;
+  const py = Number.isFinite(node.bbox[1]) ? Math.round(node.bbox[1] * 100) : 0;
+  const posHint = `${px}_${py}`;
   return parentPath ? `${parentPath}/${hash.slice(0, 12)}_${posHint}` : `/${hash.slice(0, 12)}_${posHint}`;
 }
 
@@ -404,6 +425,10 @@ export function nodeSimilarity(a: UINode, b: UINode): number {
 
 /**
  * Compute bbox similarity (0-1) using IoU-like metric.
+ *
+ * Degenerate inputs: a non-finite (NaN/Infinity) coordinate makes the union
+ * non-finite and yields 0 rather than NaN; two identical zero-area boxes at the
+ * same point return 1 (perfect match).
  */
 export function bboxSimilarity(a: BBox01, b: BBox01): number {
   // Intersection
@@ -419,10 +444,11 @@ export function bboxSimilarity(a: BBox01, b: BBox01): number {
   const areaB = b[2] * b[3];
   const union = areaA + areaB - intersection;
 
-  if (union === 0) {
+  if (!Number.isFinite(union) || union <= 0) {
     // Two identical zero-area boxes at the same point (collapsed/measure-only
     // elements, common in real DOMs) are geometrically identical — treat as a
-    // perfect match rather than penalizing them with 0.
+    // perfect match rather than penalizing them with 0. A non-finite union
+    // (from a NaN/Infinity coordinate) falls through to 0, not NaN.
     if (a[0] === b[0] && a[1] === b[1]) return 1;
     return 0;
   }

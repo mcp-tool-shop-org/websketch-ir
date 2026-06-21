@@ -217,6 +217,8 @@ function validateNode(
     for (let i = 0; i < 4; i++) {
       if (typeof node.bbox[i] !== "number") {
         issues.push(issue(`${path}.bbox[${i}]`, "number", typeOf(node.bbox[i]), `bbox element ${i} must be a number`));
+      } else if (!Number.isFinite(node.bbox[i])) {
+        issues.push(issue(`${path}.bbox[${i}]`, "finite number", `${node.bbox[i] as number}`, `bbox element ${i} must be a finite number`));
       }
     }
   }
@@ -485,12 +487,18 @@ export function validateCapture(
     const vp = obj.viewport as Record<string, unknown>;
     if (typeof vp.w_px !== "number") {
       issues.push(issue("viewport.w_px", "number", typeOf(vp.w_px), "Viewport w_px is required"));
+    } else if (!Number.isFinite(vp.w_px) || vp.w_px <= 0) {
+      issues.push(issue("viewport.w_px", "finite number > 0", `${vp.w_px}`, "Viewport w_px must be a finite number greater than 0"));
     }
     if (typeof vp.h_px !== "number") {
       issues.push(issue("viewport.h_px", "number", typeOf(vp.h_px), "Viewport h_px is required"));
+    } else if (!Number.isFinite(vp.h_px) || vp.h_px <= 0) {
+      issues.push(issue("viewport.h_px", "finite number > 0", `${vp.h_px}`, "Viewport h_px must be a finite number greater than 0"));
     }
     if (typeof vp.aspect !== "number") {
       issues.push(issue("viewport.aspect", "number", typeOf(vp.aspect), "Viewport aspect is required"));
+    } else if (!Number.isFinite(vp.aspect)) {
+      issues.push(issue("viewport.aspect", "finite number", `${vp.aspect}`, "Viewport aspect must be a finite number"));
     }
   }
 
@@ -519,6 +527,22 @@ export function validateCapture(
   }
 
   return issues;
+}
+
+/**
+ * Type guard: check if an unknown value is a valid WebSketchCapture.
+ * Convenience wrapper around {@link validateCapture} — returns true when
+ * validation produces zero issues.
+ *
+ * @param data - The value to validate
+ * @param limits - Optional partial resource limits override
+ * @returns True (narrowing `data` to WebSketchCapture) when fully valid
+ */
+export function isValidCapture(
+  data: unknown,
+  limits?: Partial<WebSketchLimits>,
+): data is WebSketchCapture {
+  return validateCapture(data, limits).length === 0;
 }
 
 // =============================================================================
@@ -681,4 +705,15 @@ export function formatWebSketchError(err: WebSketchError): string {
  */
 export function isWebSketchException(err: unknown): err is WebSketchException {
   return err instanceof WebSketchException;
+}
+
+/**
+ * Extract the structured {@link WebSketchError} payload from an unknown error,
+ * or `undefined` if the value is not a {@link WebSketchException}.
+ *
+ * Convenience for `catch (err)` blocks that want the structured envelope
+ * without an explicit instanceof narrowing.
+ */
+export function getWebSketchError(err: unknown): WebSketchError | undefined {
+  return isWebSketchException(err) ? err.ws : undefined;
 }

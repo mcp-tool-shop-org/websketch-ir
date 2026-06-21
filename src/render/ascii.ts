@@ -228,17 +228,32 @@ const CONTAINER_ROLES: ReadonlySet<UIRole> = new Set<UIRole>([
   "CARD", "LIST", "TABLE", "SECTION",
 ]);
 
+/**
+ * Coerce a non-finite number (NaN/Infinity/-Infinity) to a sentinel so the
+ * ASCII path fails soft on bad geometry instead of throwing. Finite values
+ * pass through unchanged.
+ */
+function finiteOr(value: number, sentinel: number): number {
+  return Number.isFinite(value) ? value : sentinel;
+}
+
 /** Convert bbox (0-1) to grid coordinates */
 function bboxToGrid(
   bbox: BBox01,
   gridWidth: number,
   gridHeight: number
 ): { x: number; y: number; w: number; h: number } {
+  // Coerce non-finite bbox components to 0 so renderAscii/renderForLLM/
+  // renderStructure fail soft on NaN/Infinity geometry instead of throwing.
+  const x0 = finiteOr(bbox[0], 0);
+  const y0 = finiteOr(bbox[1], 0);
+  const w0 = finiteOr(bbox[2], 0);
+  const h0 = finiteOr(bbox[3], 0);
   return {
-    x: Math.floor(bbox[0] * gridWidth),
-    y: Math.floor(bbox[1] * gridHeight),
-    w: Math.max(2, Math.ceil(bbox[2] * gridWidth)),
-    h: Math.max(2, Math.ceil(bbox[3] * gridHeight)),
+    x: Math.floor(x0 * gridWidth),
+    y: Math.floor(y0 * gridHeight),
+    w: Math.max(2, Math.ceil(w0 * gridWidth)),
+    h: Math.max(2, Math.ceil(h0 * gridHeight)),
   };
 }
 
@@ -431,10 +446,15 @@ export function renderStructure(
  * Render an LLM-optimized view with full detail.
  */
 export function renderForLLM(capture: WebSketchCapture): string {
+  // Guard against non-finite / out-of-range timestamps so toISOString()
+  // never throws a RangeError on bad capture metadata.
+  const t = Number(capture.timestamp_ms);
+  const stamp = Number.isFinite(t) ? new Date(t).toISOString() : "unknown";
+
   const header = [
     `URL: ${capture.url}`,
     `Viewport: ${capture.viewport.w_px}x${capture.viewport.h_px}`,
-    `Captured: ${new Date(capture.timestamp_ms).toISOString()}`,
+    `Captured: ${stamp}`,
     "─".repeat(80),
   ].join("\n");
 

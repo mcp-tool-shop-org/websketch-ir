@@ -23,7 +23,13 @@
 export type { EmitHTMLOptions } from "./html.js";
 export { emitHTML, emitNodeHTML, roleToElement } from "./html.js";
 
-export { renderAscii, renderForLLM } from "../render/ascii.js";
+export {
+  renderAscii,
+  renderForLLM,
+  renderStructure,
+  renderNodeAscii,
+  generateLegend,
+} from "../render/ascii.js";
 
 export type { RenderJSONOptions, JSONNode } from "../render/json.js";
 export { renderJSON } from "../render/json.js";

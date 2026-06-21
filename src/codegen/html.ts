@@ -157,9 +157,12 @@ function nodeAttrs(node: UINode, options: Required<EmitHTMLOptions>): Record<str
     attrs["data-wsk-semantic"] = node.semantic;
   }
 
-  // Bbox
+  // Bbox — coerce non-finite components (NaN/Infinity) to 0 so the emitted
+  // data-wsk-bbox is never "NaN,NaN,NaN,NaN" (mirrors the viewport guard).
   if (options.includeBbox) {
-    attrs["data-wsk-bbox"] = node.bbox.map((v) => v.toFixed(3)).join(",");
+    attrs["data-wsk-bbox"] = node.bbox
+      .map((v) => (Number.isFinite(v) ? v : 0).toFixed(3))
+      .join(",");
   }
 
   // Interactive / focusable

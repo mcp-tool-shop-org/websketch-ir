@@ -12,6 +12,7 @@ export default defineConfig({
     starlight({
       title: 'WebSketch IR',
       description: 'WebSketch IR handbook',
+      favicon: '/favicon.svg',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/mcp-tool-shop-org/websketch-ir' },
       ],

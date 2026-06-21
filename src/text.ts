@@ -6,6 +6,7 @@
  */
 
 import type { TextKind, TextSignal } from "./grammar.js";
+import { WebSketchException } from "./errors.js";
 
 // =============================================================================
 // Text Normalization
@@ -82,7 +83,11 @@ export async function sha256(text: string): Promise<string> {
     return createHash("sha256").update(text).digest("hex");
   }
 
-  throw new Error("No crypto implementation available");
+  throw new WebSketchException({
+    code: "WS_INTERNAL",
+    message: "No crypto implementation available",
+    hint: "SHA-256 requires SubtleCrypto (browser) or node:crypto (Node); use hashSync/createTextSignalSync for a dependency-free FNV-1a hash",
+  });
 }
 
 /**
@@ -182,6 +187,9 @@ export function isMixedContent(rawText: string): boolean {
  * match {@link createTextSignalSync} so async and sync capture paths never
  * mis-diff against each other. The async signature is retained for API
  * back-compat even though no async work is performed.
+ *
+ * Note: `TextSignal.len` counts UTF-16 code units (consistent with the
+ * {@link fnv1a64} UTF-16 caveat), not Unicode code points.
  */
 export function createTextSignal(rawText: string): Promise<TextSignal> {
   // Delegates to the sync builder so both paths produce byte-identical
@@ -193,6 +201,9 @@ export function createTextSignal(rawText: string): Promise<TextSignal> {
 /**
  * Synchronous version of createTextSignal.
  * Uses sync hash (node-only for crypto, simple hash in browser).
+ *
+ * Note: `TextSignal.len` counts UTF-16 code units (consistent with the
+ * {@link fnv1a64} UTF-16 caveat), not Unicode code points.
  */
 export function createTextSignalSync(rawText: string): TextSignal {
   const normalized = normalizeText(rawText);

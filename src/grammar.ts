@@ -659,6 +659,9 @@ export function createNode(
  * Create a complete WebSketchCapture with sensible defaults.
  * Provides reasonable fallbacks for compiler metadata, viewport, timestamp, and URL.
  *
+ * Note: the builders do not validate inputs — use {@link parseCapture} or
+ * `validateCapture` (from `errors.ts`) for untrusted data.
+ *
  * @param root - The root UINode (should have role "PAGE")
  * @param metadata - Optional overrides for url, viewport, and timestamp_ms
  * @returns A complete WebSketchCapture ready for serialization
@@ -673,6 +676,10 @@ export function createCapture(
 ): WebSketchCapture {
   const w_px = metadata?.viewport?.w_px ?? 1280;
   const h_px = metadata?.viewport?.h_px ?? 800;
+  // Guard the derived aspect so a non-positive or non-finite h_px never yields
+  // NaN/Infinity; fall back to the default 1280/800 ratio in that case.
+  const derivedAspect =
+    Number.isFinite(h_px) && h_px > 0 && Number.isFinite(w_px) ? w_px / h_px : 1280 / 800;
   return {
     version: "0.1",
     url: metadata?.url ?? "about:blank",
@@ -680,7 +687,7 @@ export function createCapture(
     viewport: {
       w_px,
       h_px,
-      aspect: metadata?.viewport?.aspect ?? w_px / h_px,
+      aspect: metadata?.viewport?.aspect ?? derivedAspect,
       ...metadata?.viewport,
     },
     compiler: {
