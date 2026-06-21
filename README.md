@@ -1,3 +1,7 @@
+<p align="center">
+  <a href="README.ja.md">日本語</a> | <a href="README.zh.md">中文</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.it.md">Italiano</a> | <a href="README.pt-BR.md">Português (BR)</a>
+</p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/mcp-tool-shop-org/brand/main/logos/websketch-ir/readme.png" alt="WebSketch IR" width="500"></p>
 
 <p align="center"><strong>Stop treating webpages like pictures.<br>A grammar-based IR that turns messy DOM into clean, typed UI primitives — built for LLMs.</strong></p>
@@ -41,7 +45,7 @@ Think of it as an "assembly language" for web UIs. You get the structure, the ge
 | **ASCII Wireframes** | Render captures as text-based wireframes that LLMs can read without vision |
 | **Structural Diffing** | Compare two captures by role + geometry + semantics, not DOM identity |
 | **64-bit Fingerprinting** | FNV-1a 64-bit hashing for fast equality checks with extremely low collision probability |
-| **Zero Dependencies** | Pure TypeScript, no runtime deps. ~43 KB on npm. Runs anywhere Node 20+ runs. |
+| **Zero Dependencies** | Pure TypeScript — no runtime deps, zero transitive dependencies. Runs anywhere Node 20+ runs. |
 
 ## Getting Started
 
@@ -106,6 +110,15 @@ const wireframe = renderAscii(capture);
 
 // LLM-optimized view with URL/viewport header and legend
 const llmView = renderForLLM(capture);
+
+// ...or tune it: scale the grid, drop the timestamp (keeps prompt caching
+// stable), suppress the legend once the model has seen it, or filter roles
+const focused = renderForLLM(capture, {
+  width: 120,
+  includeTimestamp: false,
+  includeLegend: false,
+  showRoles: ['BUTTON', 'LINK', 'INPUT'],
+});
 
 // Compact structure-only view (no text, no semantics)
 const structure = renderStructure(capture, 60, 16);
@@ -188,6 +201,24 @@ const firstVisible = findFirst(capture.root, (n) => n.visible === true);
 const nav = findByRole(capture.root, 'NAV');
 ```
 
+### Addressability & containment
+
+Ids are the library's stable cross-capture handle (they show up in diffs and emitted IR). Resolve one back to a node, or reason about structure:
+
+```typescript
+import { findById, getParent, findAncestor, queryWithin } from '@mcptoolshop/websketch-ir';
+
+// Resolve a content-addressed id back to its node
+const node   = findById(capture.root, '/a1b2c3d4e5f6_42_80');
+
+// Walk relationships (computed from root — no parent pointers stored)
+const parent = getParent(capture.root, node);
+const form   = findAncestor(capture.root, node, (n) => n.role === 'FORM');
+
+// "the INPUTs inside this FORM" in one line
+const fields = queryWithin(capture.root, (n) => n.role === 'FORM', 'INPUT');
+```
+
 ### Markdown rendering
 
 ```typescript
@@ -199,15 +230,20 @@ const md = renderMarkdown(capture, { includeMetadata: true });
 
 ### JSON renderer & LLM diff summary
 
-Available from the `codegen` sub-path:
-
 ```typescript
 import {
-  renderJSON,        // Minimal JSON tree for LLM tool-calling
+  renderJSON,        // Minimal JSON tree (opt-in includePath / includeId handles)
+  renderJSONFlat,    // Flat array of interactive nodes with stable path handles
   formatDiffForLLM,  // One-paragraph natural-language diff summary
-  RENDERERS,         // Registry: { html, ascii, llm, json, markdown }
-} from '@mcptoolshop/websketch-ir/codegen';
+} from '@mcptoolshop/websketch-ir';
+
+// renderJSONFlat is the natural shape for a tool-call menu: each entry carries a
+// stable `path` the agent can hand straight back to a downstream tool.
+const menu = renderJSONFlat(capture);
+// → [{ path: 'PAGE/FORM[1]/BUTTON[0]', role: 'BUTTON', bbox: [...], interactive: true }, ...]
 ```
+
+The `RENDERERS` registry (`{ html, ascii, llm, json, markdown }`) remains available from the `@mcptoolshop/websketch-ir/codegen` sub-path.
 
 ## The Grammar at a Glance
 

@@ -46,7 +46,7 @@
 - [x] `[all]` `verify` script exists (npm run validate: clean + typecheck + lint + build + test) (2026-02-27)
 - [x] `[all]` Version in manifest matches git tag (2026-02-27)
 - [x] `[all]` Dependency scanning runs in CI (ecosystem-appropriate) (2026-02-27)
-- [x] `[all]` Automated dependency update mechanism exists (2026-02-27)
+- [ ] `[all]` SKIP: dependabot removed per house default (no auto-update unless requested); deps maintained manually + `npm audit` gates CI (2026-06-21)
 - [x] `[npm]` `npm pack --dry-run` includes: dist/, README.md, CHANGELOG.md, LICENSE (2026-02-27)
 - [x] `[npm]` `engines.node` set (>=18.0.0) (2026-02-27)
 - [x] `[npm]` Lockfile committed (2026-02-27)
@@ -56,7 +56,7 @@
 ## E. Identity (soft gate — does not block ship)
 
 - [x] `[all]` Logo in README header (2026-02-27)
-- [ ] `[all]` SKIP: translations not yet added — planned for future release
+- [x] `[all]` README localized into 7 languages (ja, zh, es, fr, hi, it, pt-BR) via TranslateGemma (2026-06-21)
 - [x] `[org]` Landing page (@mcptoolshop/site-theme) (2026-02-27)
 - [x] `[all]` GitHub repo metadata: description, homepage, topics (2026-02-27)
 
