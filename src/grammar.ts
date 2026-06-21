@@ -8,6 +8,12 @@
  * 4. Stable under "div soup" (wrappers collapse)
  */
 
+/**
+ * Single source of truth for the library version, stamped into capture
+ * compiler metadata. Keep in sync with package.json `version`.
+ */
+export const LIBRARY_VERSION = "2.2.0";
+
 // =============================================================================
 // Bounding Box (viewport-relative 0-1)
 // =============================================================================
@@ -49,7 +55,7 @@ export type TextKind = "none" | "short" | "sentence" | "paragraph" | "mixed";
  * Hash + shape, not content (for invariance + privacy).
  */
 export interface TextSignal {
-  /** SHA-256 hash of normalized text (trim, collapse whitespace, lowercase) */
+  /** FNV-1a 64-bit hash (16 hex chars) of normalized text (trim, collapse whitespace, lowercase) */
   hash?: string;
   /** Character length of normalized text */
   len?: number;
@@ -622,7 +628,12 @@ export function findByRole(root: UINode, role: UIRole): UINode | undefined {
 /**
  * Create a UINode with sensible defaults.
  * Only `role` and `bbox` are required; all other fields use defaults
- * (visible: true, interactive: false, auto-generated id).
+ * (visible: true, interactive: false).
+ *
+ * The generated `id` is a random placeholder (`node-<role>-<rand>`), NOT a
+ * stable or content-addressed id. It is intended to be replaced by
+ * {@link assignNodeIds} (from `hash.ts`), which assigns deterministic,
+ * content-addressed ids once the tree is assembled.
  *
  * @param role - The UI role for this node
  * @param bbox - Bounding box in viewport-relative [0,1] coordinates
@@ -674,7 +685,7 @@ export function createCapture(
     },
     compiler: {
       name: "websketch-ir",
-      version: "2.0.1",
+      version: LIBRARY_VERSION,
       options_hash: "default",
     },
     root,

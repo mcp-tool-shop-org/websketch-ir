@@ -40,9 +40,27 @@ const DEFAULT_OPTIONS: Required<RenderMarkdownOptions> = {
 // Helpers
 // =============================================================================
 
-/** Extract a short display label from a node. */
+/**
+ * Escape markdown-significant characters in untrusted inline text so it
+ * cannot break out of table cells, links, headers, bold, or list items.
+ * Strips/escapes: pipe, backtick, square brackets, leading block markers
+ * (#/>/-/*), and collapses newlines. Kept minimal to avoid over-escaping
+ * normal prose.
+ */
+function escapeMd(value: string): string {
+  return value
+    // Collapse any newlines to spaces so a single value stays on one line.
+    .replace(/[\r\n]+/g, " ")
+    // Escape inline-significant characters.
+    .replace(/([|`[\]])/g, "\\$1")
+    // Strip leading block-level markers that would change the line's meaning.
+    .replace(/^[\s]*[#>*-]+\s?/, "")
+    .trim();
+}
+
+/** Extract a short display label from a node (markdown-escaped). */
 function nodeText(node: UINode): string {
-  if (node.semantic) return node.semantic;
+  if (node.semantic) return escapeMd(node.semantic);
   if (node.text?.kind !== "none" && node.text?.len) return `(${node.text.len} chars)`;
   return "";
 }
@@ -132,17 +150,47 @@ function renderNode(
       if (label) lines.push(`**${label}**`);
       lines.push("");
       if (kids.length > 0) {
-        // Treat first child row as header, rest as body
-        const headerCells = (kids[0].children ?? []).map(
+        // Treat first child row as header, rest as body.
+        let headerCells = (kids[0].children ?? []).map(
           (c) => nodeText(c) || c.role,
         );
-        if (headerCells.length > 0) {
-          lines.push(`| ${headerCells.join(" | ")} |`);
-          lines.push(`| ${headerCells.map(() => "---").join(" | ")} |`);
-          for (let i = 1; i < kids.length; i++) {
-            const cells = (kids[i].children ?? []).map(
+        let bodyStart = 1;
+
+        // If the first row has no cells, the table would be silently dropped.
+        // Fall back to the row with the most cells for the header so the body
+        // still renders; if no row has cells, synthesize a generic header.
+        if (headerCells.length === 0) {
+          let widest = -1;
+          let widestCount = 0;
+          for (let i = 0; i < kids.length; i++) {
+            const count = (kids[i].children ?? []).length;
+            if (count > widestCount) {
+              widestCount = count;
+              widest = i;
+            }
+          }
+          if (widest >= 0 && widestCount > 0) {
+            headerCells = (kids[widest].children ?? []).map(
               (c) => nodeText(c) || c.role,
             );
+            bodyStart = widest + 1;
+          } else {
+            headerCells = ["Column"];
+            bodyStart = 0;
+          }
+        }
+
+        if (headerCells.length > 0) {
+          const width = headerCells.length;
+          lines.push(`| ${headerCells.join(" | ")} |`);
+          lines.push(`| ${headerCells.map(() => "---").join(" | ")} |`);
+          for (let i = bodyStart; i < kids.length; i++) {
+            const raw = (kids[i].children ?? []).map(
+              (c) => nodeText(c) || c.role,
+            );
+            // Pad/truncate body rows to the header width so the table is valid.
+            const cells = raw.slice(0, width);
+            while (cells.length < width) cells.push("");
             lines.push(`| ${cells.join(" | ")} |`);
           }
         }
@@ -281,9 +329,9 @@ export function renderMarkdown(
   const lines: string[] = [];
 
   if (opts.includeMetadata) {
-    lines.push(`> **URL:** ${capture.url}`);
+    lines.push(`> **URL:** ${escapeMd(capture.url)}`);
     lines.push(
-      `> **Viewport:** ${capture.viewport.w_px}x${capture.viewport.h_px}`,
+      `> **Viewport:** ${escapeMd(String(capture.viewport.w_px))}x${escapeMd(String(capture.viewport.h_px))}`,
     );
     lines.push(
       `> **Captured:** ${new Date(capture.timestamp_ms).toISOString()}`,

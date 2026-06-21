@@ -109,12 +109,30 @@ function escapeHTML(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** Allowlist for safe HTML attribute-name characters. */
+const ATTR_KEY_ALLOWED = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Sanitize a dynamic attribute-name fragment to the strict allowlist
+ * charset, stripping any character that could break out of the attribute
+ * name (attribute-name injection / XSS). Empty result falls back to "x"
+ * so the emitted key is always well-formed.
+ */
+function sanitizeAttrKeyPart(part: string): string {
+  const cleaned = part.replace(/[^a-zA-Z0-9_-]+/g, "");
+  return cleaned.length > 0 ? cleaned : "x";
+}
+
 /**
  * Build attribute string from key-value pairs.
- * Keys are sorted for deterministic output.
+ * Keys are sorted for deterministic output. Keys that do not match the
+ * strict attribute-name allowlist are skipped entirely so a malformed
+ * (untrusted) key can never be emitted verbatim.
  */
 function buildAttrs(attrs: Record<string, string>): string {
-  const keys = Object.keys(attrs).sort();
+  const keys = Object.keys(attrs)
+    .filter((k) => ATTR_KEY_ALLOWED.test(k))
+    .sort();
   if (keys.length === 0) return "";
   return " " + keys.map((k) => `${k}="${escapeAttr(attrs[k])}"`).join(" ");
 }
@@ -196,7 +214,9 @@ function nodeAttrs(node: UINode, options: Required<EmitHTMLOptions>): Record<str
   if (options.includeBindings && node.bindings && node.bindings.length > 0) {
     const sorted = [...node.bindings].sort((a, b) => a.property.localeCompare(b.property));
     for (const b of sorted) {
-      attrs[`data-wsk-bind-${b.property}`] = b.expression;
+      // Sanitize the dynamic key fragment so the attribute name is always
+      // well-formed (defense in depth alongside buildAttrs's allowlist).
+      attrs[`data-wsk-bind-${sanitizeAttrKeyPart(b.property)}`] = b.expression;
     }
   }
 

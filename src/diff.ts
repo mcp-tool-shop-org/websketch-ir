@@ -107,6 +107,14 @@ export interface DiffTruncation {
   nodeCountA: number;
   nodeCountB: number;
   limit: number;
+  /**
+   * Present and true when the bucketed large-tree matcher hit its internal
+   * per-call candidate budget (BUCKET_CANDIDATE_BUDGET) and skipped some
+   * comparisons. This is distinct from `maxDiffNodes` truncation: it can fire
+   * even when no `limit` was requested, on adversarial single-role pages.
+   * When this is the *only* reason for truncation, `limit` is Infinity.
+   */
+  matchBudgetExhausted?: true;
 }
 
 const DEFAULT_OPTIONS: Required<DiffOptions> = {
@@ -185,14 +193,52 @@ interface Match {
 }
 
 /**
+ * Hard cap on the number of node pairs compared inside findMatchesBucketed.
+ *
+ * Bucketing by role bounds the comparison space to O(sum(n_k * m_k)), but a
+ * single dominant role (e.g. an adversarial page that is 100k identical
+ * `cell` nodes) collapses that back to O(n_k * m_k) ≈ O(n * m). This budget
+ * is the always-on backstop: once we have queued this many candidate pairs we
+ * stop comparing and flag the result as truncated, trading completeness on
+ * pathological pages for a bounded running time. Normal pages never approach
+ * this ceiling, so their matching is unaffected.
+ */
+const BUCKET_CANDIDATE_BUDGET = 2_000_000;
+
+/**
  * Bucketed matching for large trees: groups nodes by role first to reduce
  * the comparison space from O(n*m) to O(sum(n_k * m_k)) where k = role.
+ *
+ * Two limitations of this path, both intentional performance trade-offs:
+ *
+ * 1. **No `role_changed` detection.** Nodes are bucketed *by role*, so every
+ *    matched pair shares a role by construction. A node whose role changed
+ *    between captures will therefore never be matched across roles here — it
+ *    surfaces as a removed+added pair instead. Detecting `role_changed`
+ *    requires the non-bucketed {@link findMatches} path (trees ≤ 2000 nodes
+ *    per side). Adding a cross-role pass for large trees would reintroduce the
+ *    O(n²) blowup this function exists to prevent, so it is deliberately
+ *    omitted. `classifyMatchChanges` keeps its role-change branch for the rare
+ *    case a caller feeds cross-role matches in directly.
+ *
+ * 2. **Bounded candidate budget.** Comparisons stop once
+ *    {@link BUCKET_CANDIDATE_BUDGET} candidate pairs have been queued (see
+ *    that constant). When the budget is hit, remaining pairs are skipped and
+ *    `budgetExhausted` is set so the caller can flag truncation.
+ *
+ * @returns matches/unmatched plus `budgetExhausted` — true when the
+ *   per-call candidate budget was reached and some comparisons were skipped.
  */
 function findMatchesBucketed(
   nodesA: FlatNode[],
   nodesB: FlatNode[],
   options: Required<DiffOptions>
-): { matches: Match[]; unmatchedA: FlatNode[]; unmatchedB: FlatNode[] } {
+): {
+  matches: Match[];
+  unmatchedA: FlatNode[];
+  unmatchedB: FlatNode[];
+  budgetExhausted: boolean;
+} {
   // Bucket by role
   const bucketsA = new Map<string, { idx: number; flat: FlatNode }[]>();
   const bucketsB = new Map<string, { idx: number; flat: FlatNode }[]>();
@@ -213,13 +259,23 @@ function findMatchesBucketed(
   const usedB = new Set<number>();
   const candidates: { i: number; j: number; sim: number }[] = [];
 
+  // Per-call comparison budget: counts every pair we *examine*, not just the
+  // ones that pass the threshold, so a dominant-role bucket cannot run away.
+  let comparisons = 0;
+  let budgetExhausted = false;
+
   // Compare within each role bucket
-  for (const [role, aEntries] of bucketsA) {
+  outer: for (const [role, aEntries] of bucketsA) {
     const bEntries = bucketsB.get(role);
     if (!bEntries) continue;
 
     for (const ae of aEntries) {
       for (const be of bEntries) {
+        if (comparisons >= BUCKET_CANDIDATE_BUDGET) {
+          budgetExhausted = true;
+          break outer;
+        }
+        comparisons++;
         const sim = nodeSimilarity(ae.flat.node, be.flat.node);
         if (sim >= options.matchThreshold) {
           candidates.push({ i: ae.idx, j: be.idx, sim });
@@ -240,7 +296,7 @@ function findMatchesBucketed(
   const unmatchedA = nodesA.filter((_, i) => !usedA.has(i));
   const unmatchedB = nodesB.filter((_, j) => !usedB.has(j));
 
-  return { matches, unmatchedA, unmatchedB };
+  return { matches, unmatchedA, unmatchedB, budgetExhausted };
 }
 
 /**
@@ -251,9 +307,19 @@ function findMatches(
   nodesA: FlatNode[],
   nodesB: FlatNode[],
   options: Required<DiffOptions>
-): { matches: Match[]; unmatchedA: FlatNode[]; unmatchedB: FlatNode[] } {
-  // Guard against O(n²) blowup on very large trees.
-  // If either side exceeds the threshold, bucket by role to reduce search space.
+): {
+  matches: Match[];
+  unmatchedA: FlatNode[];
+  unmatchedB: FlatNode[];
+  budgetExhausted: boolean;
+} {
+  // Always-on performance guard against O(n²) blowup on very large trees.
+  // This is the real safety floor (independent of the opt-in `maxDiffNodes`
+  // truncation, which defaults to Infinity): once either side exceeds 2000
+  // nodes we switch to role-bucketed matching to shrink the search space.
+  // Note the bucketed path cannot detect `role_changed` (it matches within a
+  // single role) and is itself capped by BUCKET_CANDIDATE_BUDGET — see
+  // findMatchesBucketed.
   const MATCH_THRESHOLD = 2000;
   if (nodesA.length > MATCH_THRESHOLD || nodesB.length > MATCH_THRESHOLD) {
     return findMatchesBucketed(nodesA, nodesB, options);
@@ -302,7 +368,9 @@ function findMatches(
   const unmatchedA = nodesA.filter((_, i) => !usedA.has(i));
   const unmatchedB = nodesB.filter((_, j) => !usedB.has(j));
 
-  return { matches, unmatchedA, unmatchedB };
+  // The non-bucketed path examines every plausible pair, so it never hits a
+  // candidate budget — always report budgetExhausted: false.
+  return { matches, unmatchedA, unmatchedB, budgetExhausted: false };
 }
 
 // =============================================================================
@@ -323,6 +391,14 @@ function computeBboxDelta(a: BBox01, b: BBox01): { dx: number; dy: number; dw: n
 
 /**
  * Classify changes for a matched pair.
+ *
+ * Note on `role_changed`: this branch only fires when the two matched nodes
+ * actually have different roles, which can only happen via the small-tree
+ * {@link findMatches} path (≤ 2000 nodes/side) that may pair nodes across
+ * roles. The large-tree {@link findMatchesBucketed} path buckets *by role*, so
+ * every pair it produces shares a role and `role_changed` is never emitted for
+ * such trees — a node whose role changed surfaces there as removed + added
+ * instead. This is an intentional limit of the O(n²) performance guard.
  */
 function classifyMatchChanges(
   match: Match,
@@ -489,7 +565,23 @@ export function diff(
   }
 
   // Find matches
-  const { matches, unmatchedA, unmatchedB } = findMatches(flatA, flatB, opts);
+  const { matches, unmatchedA, unmatchedB, budgetExhausted } = findMatches(flatA, flatB, opts);
+
+  // If the bucketed matcher hit its internal candidate budget, surface it via
+  // the truncation channel. This can fire even when no `maxDiffNodes` limit was
+  // set (adversarial single-role pages), so synthesize a truncation record with
+  // an Infinity limit if one doesn't already exist.
+  if (budgetExhausted) {
+    truncation = {
+      ...(truncation ?? {
+        truncated: true,
+        nodeCountA: flatA.length,
+        nodeCountB: flatB.length,
+        limit: opts.maxDiffNodes,
+      }),
+      matchBudgetExhausted: true,
+    };
+  }
 
   // Collect all changes
   const changes: NodeChange[] = [];

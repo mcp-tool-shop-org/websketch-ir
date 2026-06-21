@@ -8,7 +8,7 @@
  * - Diff matching
  *
  * **Algorithm versioning note:** The current implementation uses the
- * hash function from `text.ts` (xxhash-based). Changing the algorithm
+ * hash function from `text.ts` (FNV-1a 64-bit). Changing the algorithm
  * would invalidate every existing fingerprint and content-addressed ID.
  * If a migration is ever needed, prefix hashes with a version tag
  * (e.g. `v1:abc123`) so consumers can detect and handle mixed corpora.
@@ -194,13 +194,30 @@ export function hashNodeShallow(node: UINode, options: HashOptions = {}): string
 }
 
 /**
+ * Maximum recursion depth for {@link hashNodeDeep}. A defensive ceiling that
+ * matches the validator's spirit: well-formed UI trees are nowhere near this
+ * deep, so a tree exceeding it indicates a cycle or pathological input. Hitting
+ * the cap stops recursion (the over-deep subtree contributes only its shallow
+ * hash) rather than overflowing the stack.
+ */
+const MAX_HASH_DEPTH = 1000;
+
+/**
  * Compute structural hash for a node including children (recursive).
  * Children are sorted by position (y, then x) for stability.
+ *
+ * @param depth - internal recursion depth (callers should omit). Recursion is
+ *   capped at {@link MAX_HASH_DEPTH} as a defense against cyclic or
+ *   pathologically deep inputs; callers should still validate tree depth.
  */
-export function hashNodeDeep(node: UINode, options: HashOptions = {}): string {
+export function hashNodeDeep(
+  node: UINode,
+  options: HashOptions = {},
+  depth: number = 0,
+): string {
   const shallowHash = hashNodeShallow(node, options);
 
-  if (!node.children || node.children.length === 0) {
+  if (depth >= MAX_HASH_DEPTH || !node.children || node.children.length === 0) {
     return shallowHash;
   }
 
@@ -214,7 +231,7 @@ export function hashNodeDeep(node: UINode, options: HashOptions = {}): string {
   });
 
   // Hash children recursively
-  const childHashes = sortedChildren.map((child) => hashNodeDeep(child, options));
+  const childHashes = sortedChildren.map((child) => hashNodeDeep(child, options, depth + 1));
 
   // Combine shallow hash with child hashes
   const combined = `${shallowHash}|c:[${childHashes.join(",")}]`;
@@ -402,6 +419,12 @@ export function bboxSimilarity(a: BBox01, b: BBox01): number {
   const areaB = b[2] * b[3];
   const union = areaA + areaB - intersection;
 
-  if (union === 0) return 0;
+  if (union === 0) {
+    // Two identical zero-area boxes at the same point (collapsed/measure-only
+    // elements, common in real DOMs) are geometrically identical — treat as a
+    // perfect match rather than penalizing them with 0.
+    if (a[0] === b[0] && a[1] === b[1]) return 1;
+    return 0;
+  }
   return intersection / union;
 }

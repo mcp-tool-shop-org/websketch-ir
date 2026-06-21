@@ -247,8 +247,12 @@ describe("bboxSimilarity edge cases", () => {
     expect(sim).toBeLessThan(1);
   });
 
-  it("zero-area boxes → 0.0", () => {
-    expect(bboxSimilarity([0.5, 0.5, 0, 0] as const, [0.5, 0.5, 0, 0] as const)).toBe(0);
+  it("identical zero-area boxes at the same point → 1.0", () => {
+    expect(bboxSimilarity([0.5, 0.5, 0, 0] as const, [0.5, 0.5, 0, 0] as const)).toBe(1);
+  });
+
+  it("zero-area boxes at different points → 0.0", () => {
+    expect(bboxSimilarity([0.5, 0.5, 0, 0] as const, [0.2, 0.2, 0, 0] as const)).toBe(0);
   });
 
   it("one zero-area box → 0.0", () => {

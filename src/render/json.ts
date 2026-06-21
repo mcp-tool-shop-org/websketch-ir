@@ -35,7 +35,7 @@ export interface RenderJSONOptions {
   includeBindings?: boolean;
   /** Include state signals in output (default: false) */
   includeState?: boolean;
-  /** Maximum tree depth to render; deeper nodes are omitted (default: Infinity) */
+  /** Maximum tree depth to render; deeper nodes are omitted (default: 50, matching the validator's depth cap) */
   maxDepth?: number;
 }
 
@@ -62,7 +62,7 @@ const DEFAULT_OPTIONS: Required<RenderJSONOptions> = {
   includeHandlers: false,
   includeBindings: false,
   includeState: false,
-  maxDepth: Infinity,
+  maxDepth: 50,
 };
 
 // =============================================================================

@@ -173,10 +173,16 @@ describe("bboxSimilarity", () => {
     expect(sim).toBeLessThan(1);
   });
 
-  it("zero-area box → 0.0", () => {
+  it("identical zero-area boxes at the same point → 1.0", () => {
+    // Collapsed / measure-only elements that share a top-left are geometrically
+    // identical and should match perfectly, not be penalized to 0.
     const a = [0.5, 0.5, 0, 0] as const;
     const b = [0.5, 0.5, 0, 0] as const;
-    expect(bboxSimilarity(a, b)).toBe(0);
+    expect(bboxSimilarity(a, b)).toBe(1);
+  });
+
+  it("zero-area boxes at different points → 0.0", () => {
+    expect(bboxSimilarity([0.5, 0.5, 0, 0] as const, [0.2, 0.2, 0, 0] as const)).toBe(0);
   });
 });
 

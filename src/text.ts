@@ -139,12 +139,11 @@ const TEXT_THRESHOLDS = {
   SHORT: 20,
   /** Max length for "sentence" */
   SENTENCE: 150,
-  /** Beyond this is "paragraph" */
-  PARAGRAPH: 500,
 } as const;
 
 /**
  * Classify text by length/shape.
+ * Anything longer than SENTENCE is classified as "paragraph" (no upper bound).
  */
 export function classifyText(normalizedText: string): TextKind {
   const len = normalizedText.length;
@@ -157,6 +156,11 @@ export function classifyText(normalizedText: string): TextKind {
 
 /**
  * Check if text contains mixed content (e.g., multiple paragraphs).
+ *
+ * Note (intentional asymmetry): this inspects the *raw* text, while
+ * {@link createTextSignal}'s `hash`/`len` reflect *normalized* text. This is
+ * deliberate — `kind` reflects the raw visual layout (blank-line structure),
+ * whereas `hash`/`len` reflect normalized content (whitespace collapsed).
  */
 export function isMixedContent(rawText: string): boolean {
   // Multiple line breaks suggest mixed content
@@ -171,23 +175,19 @@ export function isMixedContent(rawText: string): boolean {
 /**
  * Generate a TextSignal from raw text.
  * This is the main entry point for text processing.
+ *
+ * The hash is computed with {@link hashSync} (FNV-1a 64-bit, 16 hex chars) —
+ * the canonical structural hash used everywhere else in the library (e.g.
+ * `hashNodeShallow` slices `text_hash` to 16 chars expecting FNV). This MUST
+ * match {@link createTextSignalSync} so async and sync capture paths never
+ * mis-diff against each other. The async signature is retained for API
+ * back-compat even though no async work is performed.
  */
-export async function createTextSignal(rawText: string): Promise<TextSignal> {
-  const normalized = normalizeText(rawText);
-  const len = normalized.length;
-
-  if (len === 0) {
-    return { kind: "none" };
-  }
-
-  const kind = isMixedContent(rawText) ? "mixed" : classifyText(normalized);
-  const hash = await sha256(normalized);
-
-  return {
-    hash,
-    len,
-    kind,
-  };
+export function createTextSignal(rawText: string): Promise<TextSignal> {
+  // Delegates to the sync builder so both paths produce byte-identical
+  // TextSignal.hash values. The Promise-returning signature is retained for
+  // API back-compat; no async work is performed.
+  return Promise.resolve(createTextSignalSync(rawText));
 }
 
 /**

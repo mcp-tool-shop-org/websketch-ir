@@ -5,8 +5,9 @@
  * Zero dependencies. Hand-rolled schema validation.
  */
 
-import type { UIRole, WebSketchCapture } from "./grammar.js";
+import type { WebSketchCapture } from "./grammar.js";
 import {
+  ROLES,
   VALID_EVENT_TYPES,
   VALID_STATE_ACCESS_KINDS,
   VALID_STATE_SCOPES,
@@ -80,6 +81,12 @@ export interface WebSketchLimits {
   maxNodes: number;
   maxDepth: number;
   maxStringLength: number;
+  /** Maximum number of lines in the raw input JSON (parseCapture only). */
+  maxInputLines: number;
+  /** Maximum number of UTF-8 bytes in the raw input JSON (parseCapture only). */
+  maxInputBytes: number;
+  /** Maximum number of characters in the raw input JSON (parseCapture only). */
+  maxInputChars: number;
 }
 
 // =============================================================================
@@ -91,17 +98,16 @@ export const DEFAULT_LIMITS: WebSketchLimits = {
   maxNodes: 10_000,
   maxDepth: 50,
   maxStringLength: 10_000,
+  maxInputLines: 50_000,
+  maxInputBytes: 2_000_000,
+  maxInputChars: 1_000_000,
 };
 
-/** All valid UIRole values (kept in sync with grammar.ts). */
-const VALID_ROLES: ReadonlySet<string> = new Set<UIRole>([
-  "PAGE", "NAV", "HEADER", "FOOTER", "SECTION", "CARD", "LIST", "TABLE",
-  "MODAL", "TOAST", "DROPDOWN",
-  "FORM", "INPUT", "BUTTON", "LINK", "CHECKBOX", "RADIO", "ICON",
-  "IMAGE", "TEXT",
-  "PAGINATION",
-  "UNKNOWN",
-]);
+/** Maximum number of validation issues collected before bailing out (memory cap). */
+const MAX_ISSUES = 100;
+
+/** All valid UIRole values, derived from grammar.ts's ROLES (single source of truth). */
+const VALID_ROLES: ReadonlySet<string> = new Set<string>(ROLES);
 
 // =============================================================================
 // Exception Class
@@ -150,7 +156,11 @@ function validateNode(
   issues: WebSketchValidationIssue[],
   visited?: WeakSet<object>,
 ): void {
-  // Circular reference guard
+  // Circular reference guard.
+  // `visited` tracks only the ACTIVE recursion path (ancestors), not every node
+  // ever seen — so a legal acyclic DAG (same child referenced twice along
+  // different branches) is not falsely flagged. The node is removed on unwind.
+  let trackedSelf = false;
   if (typeof data === "object" && data !== null) {
     const seen = visited ?? new WeakSet<object>();
     if (seen.has(data)) {
@@ -158,10 +168,11 @@ function validateNode(
       return;
     }
     seen.add(data);
-    // eslint-disable-next-line no-param-reassign
+    trackedSelf = true;
     visited = seen;
   }
 
+  try {
   // Limit checks (collect up to 3 violations before bailing out)
   state.nodeCount++;
   if (state.nodeCount > limits.maxNodes) {
@@ -263,6 +274,7 @@ function validateNode(
             issues.push(issue(`${hp}.target`, "string | undefined", typeOf(hObj.target), "Handler target must be a string if present"));
           }
         }
+        if (issues.length > MAX_ISSUES) return;
       }
     }
   }
@@ -290,6 +302,7 @@ function validateNode(
             issues.push(issue(`${bp}.expression`, `<= ${limits.maxStringLength} chars`, `${bObj.expression.length}`, "Binding expression exceeds maxStringLength"));
           }
         }
+        if (issues.length > MAX_ISSUES) return;
       }
     }
   }
@@ -324,6 +337,7 @@ function validateNode(
             }
           }
         }
+        if (issues.length > MAX_ISSUES) return;
       }
     }
   }
@@ -343,6 +357,7 @@ function validateNode(
           } else if (!VALID_STYLE_INTENT_TOKENS.has(st.tokens[i] as string)) {
             issues.push(issue(`${path}.style.tokens[${i}]`, `one of [${[...VALID_STYLE_INTENT_TOKENS].join(", ")}]`, `"${st.tokens[i] as string}"`, `Invalid style intent token: "${st.tokens[i] as string}"`));
           }
+          if (issues.length > MAX_ISSUES) return;
         }
       }
       if (st.density !== undefined) {
@@ -405,8 +420,15 @@ function validateNode(
       for (let i = 0; i < node.children.length; i++) {
         validateNode(node.children[i], `${path}.children[${i}]`, depth + 1, state, limits, issues, visited);
         // Stop collecting issues if we have too many
-        if (issues.length > 100) return;
+        if (issues.length > MAX_ISSUES) return;
       }
+    }
+  }
+  } finally {
+    // Unwind: remove this node from the active recursion path so a sibling
+    // branch that legitimately re-references it is not flagged circular.
+    if (trackedSelf && typeof data === "object" && data !== null) {
+      visited?.delete(data);
     }
   }
 }
@@ -514,16 +536,37 @@ export function parseCapture(
   json: string,
   limits?: Partial<WebSketchLimits>,
 ): WebSketchCapture {
-  // Step 0: Input size guard
-  const maxInputLength = limits?.maxStringLength
-    ? limits.maxStringLength * 100  // generous but bounded
-    : DEFAULT_LIMITS.maxStringLength * 100;
-  const inputLines = json.split("\n").length;
-  const inputBytes = new TextEncoder().encode(json).byteLength;
-  if (json.length > maxInputLength) {
+  // Step 0: Input size guard.
+  // Decoupled, explicit caps — character/line/byte limits each have their own
+  // configurable default (no longer derived from maxStringLength). Check the
+  // cheap O(1) character count FIRST so we never allocate split()/encode()
+  // arrays over an oversized untrusted string, then enforce line and byte caps.
+  const maxInputChars = limits?.maxInputChars ?? DEFAULT_LIMITS.maxInputChars;
+  const maxInputLines = limits?.maxInputLines ?? DEFAULT_LIMITS.maxInputLines;
+  const maxInputBytes = limits?.maxInputBytes ?? DEFAULT_LIMITS.maxInputBytes;
+
+  if (json.length > maxInputChars) {
     throw new WebSketchException({
       code: "WS_LIMIT_EXCEEDED",
-      message: `Input JSON exceeds maximum length (${json.length} chars > ${maxInputLength} limit, ${inputLines} lines, ${inputBytes} bytes)`,
+      message: `Input JSON exceeds maximum length (${json.length} chars > ${maxInputChars} limit)`,
+      hint: "The input is too large. Try reducing capture complexity or increasing limits.",
+    });
+  }
+
+  const inputLines = json.split("\n").length;
+  if (inputLines > maxInputLines) {
+    throw new WebSketchException({
+      code: "WS_LIMIT_EXCEEDED",
+      message: `Input JSON exceeds maximum line count (${inputLines} lines > ${maxInputLines} limit)`,
+      hint: "The input is too large. Try reducing capture complexity or increasing limits.",
+    });
+  }
+
+  const inputBytes = new TextEncoder().encode(json).byteLength;
+  if (inputBytes > maxInputBytes) {
+    throw new WebSketchException({
+      code: "WS_LIMIT_EXCEEDED",
+      message: `Input JSON exceeds maximum byte size (${inputBytes} bytes > ${maxInputBytes} limit)`,
       hint: "The input is too large. Try reducing capture complexity or increasing limits.",
     });
   }

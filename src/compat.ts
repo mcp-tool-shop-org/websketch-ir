@@ -13,13 +13,11 @@
 
 /**
  * Current schema version produced by this version of websketch-ir.
- * @deprecated since v2.0, removal target v3.0. Import from the versioned module instead.
  */
 export const CURRENT_SCHEMA_VERSION = "0.1";
 
 /**
  * All schema versions this library can read.
- * @deprecated since v2.0, removal target v3.0. Import from the versioned module instead.
  */
 export const SUPPORTED_SCHEMA_VERSIONS: ReadonlySet<string> = new Set([
   "0.1",
@@ -30,8 +28,6 @@ export const SUPPORTED_SCHEMA_VERSIONS: ReadonlySet<string> = new Set([
  *
  * Returns true for any version in SUPPORTED_SCHEMA_VERSIONS.
  * Returns false for null, undefined, empty, or unknown versions.
- *
- * @deprecated since v2.0, removal target v3.0. Import from the versioned module instead.
  */
 export function isSupportedSchemaVersion(version: unknown): version is string {
   return typeof version === "string" && SUPPORTED_SCHEMA_VERSIONS.has(version);
