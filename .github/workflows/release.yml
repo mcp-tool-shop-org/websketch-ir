@@ -1,0 +1,89 @@
+name: Release
+
+# npm Trusted Publishing for @mcptoolshop/websketch-ir is bound to THIS
+# workflow filename (release.yml) via OIDC. Do NOT rename this file or the
+# trusted-publisher binding breaks. No NPM_TOKEN is used — publishing is OIDC.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to (re)release, e.g. v2.2.0'
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # create the GitHub Release
+  id-token: write   # OIDC trusted publishing to npm (provenance)
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install npm >= 11.5.1 (required for OIDC trusted publishing)
+        run: |
+          # Node 22 ships npm 10.9, which signs provenance but cannot negotiate
+          # the OIDC auth path (publish PUT returns a misleading 404). Install a
+          # newer npm into a sandbox prefix and shadow it on PATH — an in-place
+          # `npm i -g npm@latest` races the bundled arborist and breaks.
+          npm install --prefix "$HOME/.npm-cli-sandbox" npm@latest >/dev/null 2>&1
+          echo "$HOME/.npm-cli-sandbox/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Show npm version
+        run: npm --version
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify tag matches package.json version
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          if [ "${{ steps.tag.outputs.version }}" != "$PKG_VERSION" ]; then
+            echo "::error::Tag ${{ steps.tag.outputs.tag }} does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+          echo "Tag ${{ steps.tag.outputs.tag }} matches package.json version $PKG_VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test:run
+
+      - name: Publish to npm (OIDC trusted publishing + provenance)
+        run: npm publish --provenance --access public
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
