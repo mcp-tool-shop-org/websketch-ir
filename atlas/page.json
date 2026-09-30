@@ -25,22 +25,48 @@
     }
   ],
   "changes": {
-    "first": true
+    "fileCounts": {
+      "added": 1,
+      "changed": 3,
+      "moved": 0,
+      "parts": 2,
+      "removed": 0
+    },
+    "items": [
+      {
+        "kind": "door",
+        "sentence": "CI's push trigger now also names `codecov.yml`.",
+        "subjects": [
+          ".github/workflows/ci.yml"
+        ]
+      },
+      {
+        "kind": "counts",
+        "sentence": "1 file added and 3 changed content, across 2 parts.",
+        "subjects": []
+      }
+    ],
+    "since": {
+      "commit": "e9980b15b46aa40fefe42e9d8b370d84e9fc1b25",
+      "generatedAt": "2026-09-25T02:16:10.944Z"
+    },
+    "unchanged": false
   },
   "changesTogether": [],
   "changesTogetherNote": [
     "Window: 180 days; a pair counts from 3 shared commits, since the window holds fewer than 30 qualifying commits."
   ],
   "changesTogetherWithTests": 0,
-  "commit": "e9980b15b46aa40fefe42e9d8b370d84e9fc1b25",
+  "commit": "f50cd7d0544493605dce89b3601675a9a370f04b",
   "defaultBranch": "main",
-  "derived": "6 parts, mostly TypeScript (46 files) and JavaScript (2). Work enters through 4 doors; CI and Release each reach 2 parts, and CI is followed because a pull request goes through it. It publishes to npm. People import @mcptoolshop/websketch-ir.",
+  "derived": "6 parts, mostly TypeScript (46 files), CSS (2), JavaScript (2) and Astro (1). Work enters through 4 doors; CI and Release each reach 2 parts, and CI is followed because a pull request goes through it. It publishes to npm. It deploys a site to GitHub Pages. People import @mcptoolshop/websketch-ir.",
   "doors": [
     {
-      "checks": [
+      "builds": [
         "src/"
       ],
-      "checksCount": 1,
+      "checks": [],
+      "checksCount": 0,
       "checksMore": 0,
       "file": ".github/workflows/ci.yml",
       "id": ".github/workflows/ci.yml",
@@ -91,19 +117,23 @@
       ],
       "runsCount": 28,
       "runsMore": 25,
-      "sends": [],
+      "sends": [
+        "uploads coverage to Codecov",
+        "scans for secrets with TruffleHog"
+      ],
       "stages": [],
       "triggers": [
-        "on a pull request",
-        "on a push to main touching 6 paths",
+        "on a pull request to main",
+        "on a push to main touching 7 paths",
         "or by hand"
       ]
     },
     {
-      "checks": [
+      "builds": [
         "src/"
       ],
-      "checksCount": 1,
+      "checks": [],
+      "checksCount": 0,
       "checksMore": 0,
       "file": ".github/workflows/release.yml",
       "id": ".github/workflows/release.yml",
@@ -177,7 +207,7 @@
         {
           "boundary": "site",
           "depth": 0,
-          "files": 3
+          "files": 5
         }
       ],
       "runs": [
@@ -187,11 +217,11 @@
       "runsCount": 2,
       "runsMore": 0,
       "sends": [
-        "deploys the site on a push to main"
+        "deploys the site on a push to main or by hand"
       ],
       "stages": [],
       "triggers": [
-        "on a pull request touching 2 paths",
+        "on a pull request to main touching 2 paths",
         "on a push to main touching 2 paths",
         "or by hand"
       ]
@@ -236,11 +266,12 @@
       "to": "src"
     }
   ],
+  "engine": "1.24.0",
   "generated": [],
-  "generatedAt": "2026-09-25T02:16:10.944Z",
+  "generatedAt": "2026-09-30T21:28:54.091Z",
   "limits": [
     "1 read goes to a path its caller passes, not to this repository.",
-    "Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions."
+    "Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 25 source files reach 10 revisions."
   ],
   "mainDoor": ".github/workflows/ci.yml",
   "partLabels": {
@@ -255,11 +286,14 @@
   "readers": [],
   "repo": "mcp-tool-shop-org/websketch-ir",
   "sequences": [],
-  "startDoor": "package.json#@mcptoolshop/websketch-ir",
+  "startDoor": ".github/workflows/ci.yml",
   "startHere": [
-    "src/codegen/index.ts"
+    ".github/workflows/ci.yml",
+    "src/index.ts",
+    "src/text.ts",
+    "src/errors.ts",
+    "src/compat.ts"
   ],
-  "startReason": "This path follows @mcptoolshop/websketch-ir (the package people import) from its entry, since CI runs only tests.",
   "summary": null,
   "summaryFrom": null,
   "testFiles": 33,

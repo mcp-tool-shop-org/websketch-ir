@@ -29,7 +29,7 @@
           "path": ".github/websketch-logo.png"
         },
         {
-          "hash": "afc113de46980d2e930e79640f643ffd771447bdce3fa57c4cf6ed9d00547ac3",
+          "hash": "5fb99cac6f74fc9568946204002c33f339f94a63814ed3ba8d2339bfed86cd49",
           "path": ".github/workflows/ci.yml"
         },
         {
@@ -157,6 +157,10 @@
           "path": "SHIP_GATE.md"
         },
         {
+          "hash": "59ca3f6a5be96b80fee73bebf2b778211208d17cd3fb82e2134608dff0729c76",
+          "path": "codecov.yml"
+        },
+        {
           "hash": "05d4576abd4cde135e67db4b20fe69f7f2dcc82a09727a11d8646ab43182d549",
           "path": "eslint.config.mjs"
         },
@@ -165,11 +169,11 @@
           "path": "logo.png"
         },
         {
-          "hash": "7fcfbbd8fcac0dc324baf69bf9dbb5ea6b2eada2c2740e0d0b94fcee666afcf2",
+          "hash": "4a46ce10ab6e78815fb7dd3d20f724249f1e20f263f4dc4b852fc62fe9640ba8",
           "path": "package-lock.json"
         },
         {
-          "hash": "5c578e8f419ba745bb86f76486b6d034676f036a281d7b71ab444ad64074756d",
+          "hash": "2a560561e04fdf5af74b790522855ed556056736b2f9ef8047f4c757f9063fc7",
           "path": "package.json"
         },
         {
@@ -212,6 +216,7 @@
           "path": "site/public/favicon.svg"
         },
         {
+          "constantOnly": true,
           "hash": "ee756dfba4122d2acc94a39b2555d9f200fff56a87a8c0b10f9cd01df26a8b62",
           "path": "site/src/content.config.ts"
         },
@@ -253,9 +258,18 @@
         },
         {
           "hash": "391533713539035d3c92282579d43de0f137067867fdb502d7eaea3c74601d2a",
+          "importOrder": [
+            "site/src/styles/global.css",
+            "site/src/site-config.ts"
+          ],
+          "importsFiles": [
+            "site/src/site-config.ts",
+            "site/src/styles/global.css"
+          ],
           "path": "site/src/pages/index.astro"
         },
         {
+          "constantOnly": true,
           "hash": "a8020fe8a9c62ba069533004dbc2e8044e6169b17908c17838615c229a871ee1",
           "path": "site/src/site-config.ts"
         },
@@ -306,6 +320,14 @@
         },
         {
           "hash": "9805564b7409a71f5f4e0ba4e7079d241861fd09eecfe3f9d1742cc0d29a16fe",
+          "importOrder": [
+            "src/codegen/html.ts",
+            "src/render/ascii.ts",
+            "src/render/json.ts",
+            "src/render/markdown.ts",
+            "src/diff.ts",
+            "src/grammar.ts"
+          ],
           "importsFiles": [
             "src/codegen/html.ts",
             "src/diff.ts",
@@ -349,6 +371,48 @@
             "isWebSketchException",
             "parseCapture",
             "validateCapture"
+          ],
+          "failurePaths": [
+            {
+              "in": "parseCapture",
+              "kind": "throw",
+              "line": 573
+            },
+            {
+              "in": "parseCapture",
+              "kind": "throw",
+              "line": 582
+            },
+            {
+              "in": "parseCapture",
+              "kind": "throw",
+              "line": 591
+            },
+            {
+              "in": "parseCapture",
+              "kind": "catch",
+              "line": 611
+            },
+            {
+              "in": "parseCapture",
+              "kind": "throw",
+              "line": 612
+            },
+            {
+              "in": "throwForValidationIssues",
+              "kind": "throw",
+              "line": 642
+            },
+            {
+              "in": "throwForValidationIssues",
+              "kind": "throw",
+              "line": 656
+            },
+            {
+              "in": "throwForValidationIssues",
+              "kind": "throw",
+              "line": 674
+            }
           ],
           "hash": "2190b6589c89cd78aa57b9cb69dc60f758efcd47427ebe07a66a6e3ae0a901c5",
           "importsFiles": [
@@ -542,6 +606,17 @@
         },
         {
           "hash": "7603b6f549634bf7fdd4a9d8329b127c720f59177e15a57ad485c0f72bc6e96a",
+          "importOrder": [
+            "src/grammar.ts",
+            "src/text.ts",
+            "src/hash.ts",
+            "src/render/ascii.ts",
+            "src/render/json.ts",
+            "src/diff.ts",
+            "src/compat.ts",
+            "src/errors.ts",
+            "src/codegen/index.ts"
+          ],
           "importsFiles": [
             "src/codegen/index.ts",
             "src/compat.ts",
@@ -602,7 +677,18 @@
             "normalizeText",
             "sha256"
           ],
+          "failurePaths": [
+            {
+              "in": "sha256",
+              "kind": "throw",
+              "line": 86
+            }
+          ],
           "hash": "34d936a653e8b9f18f0485004e135500df2790ffef0a4a5134ad6b2a9b24c44a",
+          "importOrder": [
+            "src/grammar.ts",
+            "src/errors.ts"
+          ],
           "importsFiles": [
             "src/errors.ts",
             "src/grammar.ts"
@@ -627,6 +713,9 @@
       ],
       "outsideReads": 1,
       "role": "code",
+      "testRunners": [
+        "vitest"
+      ],
       "testedBy": 31,
       "unresolvedSites": 0
     },
@@ -644,12 +733,18 @@
         },
         {
           "hash": "4a3c2066f987d6fdfbc6175270a6bf502866ddfad4bf178d907144c27636a4af",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/bench.ts"
+          "path": "tests/bench.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "84420c3cc809b6ee9ce5708c6de5015d643030fe20e4a5c330f7eb8b76efb6a9",
@@ -657,32 +752,46 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/codegen.test.ts"
+          "path": "tests/codegen.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "ff62ff30fc2511406ff9cff92cd9d15a97a1ca31c01ad0642a83908e94b590e0",
           "importsFiles": [
             "src/compat.ts"
           ],
-          "path": "tests/compat.test.ts"
+          "path": "tests/compat.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "926fe33faec5bb3964ccb8f28fd38eb0a22c8ef6f16d00960271f21a01c0785f",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/diff.test.ts"
+          "path": "tests/diff.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "b4d4da39a3d0db516de9cf7ce34aef7d9f5ffc8bea2e83f32b8b07fbca8d5857",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/errors.test.ts"
+          "path": "tests/errors.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "01885a29105d7f739b65ecf59a7ac7e7563e6973175a6f248b568af3e538e4a0",
@@ -690,16 +799,23 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/feature-pass.test.ts"
+          "path": "tests/feature-pass.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "548a7321b1877dfe60ba861ed083a834bae09b634b1a9072e24d26d6d1f17d23",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/fingerprint.test.ts"
+          "path": "tests/fingerprint.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "672b79c9f8961c4363ca11d10bfa44d160e03f8c6f3eaadef9a81b81369241dd",
@@ -722,6 +838,10 @@
         },
         {
           "hash": "64486c110f33b441741326dff1480c399875b9bbfa496d4a4f0b80a6f8b016e9",
+          "importOrder": [
+            "tests/fixtures/index.ts",
+            "src/index.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/index.ts"
@@ -734,7 +854,8 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/handlers.test.ts"
+          "path": "tests/handlers.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "5cd1c84e2097c3d6f23880cd90e68a6635fb3b6b76f45d40a79391d7543006bb",
@@ -742,7 +863,8 @@
             "src/index.ts",
             "tests/fixtures/captures.ts"
           ],
-          "path": "tests/hash-naming.test.ts"
+          "path": "tests/hash-naming.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "2b59b2d876ece87cfae00b6a813ddb790caa6bd00d0e01091ca20c9045de44ce",
@@ -750,7 +872,8 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/hash-unit.test.ts"
+          "path": "tests/hash-unit.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "e65b7b395677ed80783cacde50250516e511ce189ff19fdc8b37eb2803cfd71b",
@@ -758,7 +881,8 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/hash.test.ts"
+          "path": "tests/hash.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "21de1393a872e3984787a9acddc3e26bfc824be67a8abc28d3125182fb54f1cb",
@@ -766,25 +890,38 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/html-codegen.test.ts"
+          "path": "tests/html-codegen.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "01ec445edf57db8328b69397499de6cb60a697e305247056a59afaa91245aa12",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/integration.test.ts"
+          "path": "tests/integration.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "74d658e0e5ff4e025b0c0af6e1538810e3223b60d259e00d0f1b109f1bc4a37b",
+          "importOrder": [
+            "src/render/json.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/render/json.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/json-render.test.ts"
+          "path": "tests/json-render.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "fa8e7443f3954864fb8578d08aa9be8df3816094d63dc239156164f7062d8650",
@@ -792,26 +929,40 @@
             "src/render/markdown.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/markdown-render.test.ts"
+          "path": "tests/markdown-render.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "e3603f9a16b41d4c043f397be9714950823e863de8a5053bb714e0dbb3111e42",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts",
+            "tests/fixtures/realistic.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts",
             "tests/fixtures/realistic.ts"
           ],
-          "path": "tests/new-features.test.ts"
+          "path": "tests/new-features.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "0e939aa89a5f4cc3c4df1e012d388caaa6404958104a70794e623cabd664d1bf",
+          "importOrder": [
+            "src/index.ts",
+            "src/codegen/index.ts",
+            "tests/fixtures/index.ts"
+          ],
           "importsFiles": [
             "src/codegen/index.ts",
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/pattern.test.ts"
+          "path": "tests/pattern.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "ab9d637ab568d84b550a80c8eeb5f6a18eeb8708ad14f8eb31f7d2ab09c64e34",
@@ -819,23 +970,31 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/query.test.ts"
+          "path": "tests/query.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "72f162294c386ca832db51bb9d596d21aa83a308285471d28a45248ab31046dc",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/render.test.ts"
+          "path": "tests/render.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "1f814ac894351c4b14cec1b169650272e25e4bb93cbf6a92d8073bfe8b826b7e",
           "importsFiles": [
             "src/index.ts"
           ],
-          "path": "tests/smoke.test.ts"
+          "path": "tests/smoke.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "09c7d7f905b29e87e2f8ec3ec0e8e7b9d51b4c3477b489d1ff8f0f3fb00a76f7",
@@ -844,17 +1003,25 @@
             "src/render/markdown.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/stage-a-regression.test.ts"
+          "path": "tests/stage-a-regression.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "48378a696a60b16991873a3b8e623f74c053038f12fe32eb165483d620ffc7d4",
+          "importOrder": [
+            "src/index.ts",
+            "src/grammar.ts",
+            "src/render/markdown.ts",
+            "tests/fixtures/index.ts"
+          ],
           "importsFiles": [
             "src/grammar.ts",
             "src/index.ts",
             "src/render/markdown.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/stage-bc-regression.test.ts"
+          "path": "tests/stage-bc-regression.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "c7192e3e50635c9f0a468b74ca8c6a7b4deb19b72469fae79abf42d5382f4112",
@@ -862,7 +1029,8 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/state.test.ts"
+          "path": "tests/state.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "9d75e384af767e1a0af2c2fa7e6abaa20fc3e6bf4a8781610c574ad135239e51",
@@ -870,43 +1038,59 @@
             "src/index.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/style.test.ts"
+          "path": "tests/style.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "21cdb7a7402142e7d3d19abc257685a8300c9304537d7b5d5c58c4f8a2566ae7",
           "importsFiles": [
             "src/index.ts"
           ],
-          "path": "tests/text-unit.test.ts"
+          "path": "tests/text-unit.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "b8e9b308e580552b6a17e3e093d993c9a13dc4af82c1d225037c0843623d04a2",
           "importsFiles": [
             "src/index.ts"
           ],
-          "path": "tests/text.test.ts"
+          "path": "tests/text.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "0080fcb98808e64172f50154067b2ec6571fa9481c5eaa022d88043ef6b99015",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/traversal.test.ts"
+          "path": "tests/traversal.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "c0a9f70ef3c37e5405c0e1dcb11dc43e67f695dddf531a0f7c3b320fbd8e3a8f",
+          "importOrder": [
+            "src/index.ts",
+            "tests/fixtures/index.ts",
+            "tests/fixtures/captures.ts"
+          ],
           "importsFiles": [
             "src/index.ts",
             "tests/fixtures/captures.ts",
             "tests/fixtures/index.ts"
           ],
-          "path": "tests/validation.test.ts"
+          "path": "tests/validation.test.ts",
+          "testFramework": "vitest"
         },
         {
           "hash": "28deea0d471d8d51b108d07e9a00e7d115387d0fe79ae230fe387b5652afb2ae",
-          "path": "tests/version.test.ts"
+          "path": "tests/version.test.ts",
+          "testFramework": "vitest"
         }
       ],
       "globs": [
@@ -916,96 +1100,273 @@
       "name": "tests",
       "origin": "authored",
       "role": "test",
+      "testRunners": [
+        "vitest"
+      ],
       "testedBy": 0,
       "unresolvedSites": 0
     }
   ],
   "doors": [
     {
-      "checksCount": 1,
+      "checksCount": 0,
       "commands": [
         {
+          "dir": "",
           "job": "test",
-          "step": "Atlas check",
-          "text": "npx --yes @dogfood-lab/atlas@1.20.0 check"
+          "programs": [
+            "npx"
+          ],
+          "step": "Atlas check"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Install dependencies",
-          "text": "npm ci"
+          "programs": [
+            "npm"
+          ],
+          "step": "Install dependencies"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Type check",
-          "text": "npm run typecheck"
+          "programs": [
+            "npm"
+          ],
+          "step": "Type check"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Lint",
-          "text": "npm run lint"
+          "programs": [
+            "npm"
+          ],
+          "step": "Lint"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Build",
-          "text": "npm run build"
+          "programs": [
+            "npm"
+          ],
+          "step": "Build"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Run tests",
-          "text": "npm run test:run"
+          "programs": [
+            "npm"
+          ],
+          "step": "Run tests"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Check for placeholder tests",
-          "text": "if grep -rn \"expect(true)\\.toBe(true)\\|expect(1 + 1)\\.toBe(2)\\|it('placeholder'\" tests/ src/__tests__/ 2>/dev/null; then\n  echo \"::error::Placeholder tests detected. Replace with real assertions or use it.skip() with a tracking issue.\"\n  exit 1\nfi\n"
+          "programs": [
+            "echo",
+            "grep"
+          ],
+          "step": "Check for placeholder tests"
         },
         {
+          "dir": "",
           "job": "test",
-          "step": "Test coverage",
-          "text": "npm run coverage"
+          "programs": [
+            "npm"
+          ],
+          "step": "Test coverage"
         },
         {
+          "dir": "",
           "job": "build-check",
-          "step": "Install dependencies",
-          "text": "npm ci"
+          "programs": [
+            "npm"
+          ],
+          "step": "Install dependencies"
         },
         {
+          "dir": "",
           "job": "build-check",
-          "step": "Clean build",
-          "text": "npm run clean"
+          "programs": [
+            "npm"
+          ],
+          "step": "Clean build"
         },
         {
+          "dir": "",
           "job": "build-check",
-          "step": "Build",
-          "text": "npm run build"
+          "programs": [
+            "npm"
+          ],
+          "step": "Build"
         },
         {
+          "dir": "",
           "job": "build-check",
-          "step": "Check dist output",
-          "text": "if [ ! -d \"dist\" ]; then\n  echo \"Error: dist directory not created\"\n  exit 1\nfi\nif [ ! -f \"dist/index.js\" ]; then\n  echo \"Error: dist/index.js not found\"\n  exit 1\nfi\necho \"Build artifacts present\"\n"
+          "programs": [
+            "echo"
+          ],
+          "step": "Check dist output"
         },
         {
+          "dir": "",
           "job": "build-check",
-          "step": "Verify exports",
-          "text": "node -e \"import('./dist/index.js').then(() => console.log('Package exports valid'))\""
+          "programs": [
+            "node"
+          ],
+          "step": "Verify exports"
         },
         {
+          "dir": "",
           "job": "audit",
-          "step": "Install dependencies",
-          "text": "npm install --ignore-scripts"
+          "programs": [
+            "npm"
+          ],
+          "step": "Install dependencies"
         },
         {
+          "dir": "",
           "job": "audit",
-          "step": "Run npm audit",
-          "text": "npm audit --audit-level=moderate"
+          "programs": [
+            "npm"
+          ],
+          "step": "Run npm audit"
         }
       ],
       "elsewhere": [],
       "file": ".github/workflows/ci.yml",
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "test",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "20",
+                  "range": ">=20.0.0 <21.0.0-0"
+                },
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "Setup Node.js",
+              "uses": "actions/setup-node",
+              "version": "${{ matrix.node }}"
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "name": "codecov",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "name": "build-check",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "20",
+                  "range": ">=20.0.0 <21.0.0-0"
+                }
+              ],
+              "step": "Setup Node.js",
+              "uses": "actions/setup-node",
+              "version": "20"
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "name": "audit",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "20",
+                  "range": ">=20.0.0 <21.0.0-0"
+                }
+              ],
+              "step": "Setup Node.js",
+              "uses": "actions/setup-node",
+              "version": "20"
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "name": "secret-scan",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ]
+        }
+      ],
       "landings": [],
       "mentions": [],
       "name": "CI",
-      "permissions": [],
+      "permissions": [
+        "contents:read",
+        "id-token:write"
+      ],
       "pushes": false,
       "reach": [
         {
@@ -1022,19 +1383,21 @@
       "readers": [],
       "runs": [
         {
+          "built": true,
           "directory": true,
           "job": "build-check",
           "matched": true,
           "path": "src/",
-          "runKind": "checks",
+          "runKind": "executes",
           "via": "tsc tsconfig.json"
         },
         {
+          "built": true,
           "directory": true,
           "job": "test",
           "matched": true,
           "path": "src/",
-          "runKind": "checks",
+          "runKind": "executes",
           "via": "eslint eslint.config.mjs"
         },
         {
@@ -1247,6 +1610,28 @@
         "releases": false
       },
       "stages": [],
+      "tests": [
+        {
+          "files": 28,
+          "job": "test",
+          "junit": true,
+          "runner": "vitest",
+          "step": "Run tests",
+          "through": [
+            "npm run test:run"
+          ]
+        },
+        {
+          "coverage": true,
+          "files": 28,
+          "job": "test",
+          "runner": "vitest",
+          "step": "Test coverage",
+          "through": [
+            "npm run coverage"
+          ]
+        }
+      ],
       "triggers": [
         {
           "branches": [
@@ -1262,6 +1647,7 @@
           "paths": [
             ".github/workflows/**",
             "atlas/**",
+            "codecov.yml",
             "package-lock.json",
             "package.json",
             "src/**",
@@ -1272,9 +1658,20 @@
           "event": "workflow_dispatch"
         }
       ],
+      "unresolvedChecks": [
+        {
+          "job": "audit",
+          "lock": "package-lock.json",
+          "rule": "D2",
+          "step": "Install dependencies",
+          "why": "npm install may add a missing binding at install time; only npm ci installs the lock as written"
+        }
+      ],
       "uses": [
         "actions/checkout",
+        "actions/download-artifact",
         "actions/setup-node",
+        "actions/upload-artifact",
         "codecov/codecov-action",
         "trufflesecurity/trufflehog"
       ],
@@ -1284,19 +1681,28 @@
       "checksCount": 0,
       "commands": [
         {
+          "dir": "site",
           "job": "build",
-          "step": "Install site dependencies",
-          "text": "npm ci"
+          "programs": [
+            "npm"
+          ],
+          "step": "Install site dependencies"
         },
         {
+          "dir": "site",
           "job": "build",
-          "step": "Audit site dependencies",
-          "text": "npm audit --audit-level=high"
+          "programs": [
+            "npm"
+          ],
+          "step": "Audit site dependencies"
         },
         {
+          "dir": "site",
           "job": "build",
-          "step": "Build site",
-          "text": "npm run build"
+          "programs": [
+            "npm"
+          ],
+          "step": "Build site"
         }
       ],
       "elsewhere": [],
@@ -1315,8 +1721,59 @@
             "branches": [
               "main"
             ],
+            "byHand": true,
             "event": "push"
           }
+        }
+      ],
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "build",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "1",
+              "uses": "actions/setup-node",
+              "version": "22"
+            }
+          ]
+        },
+        {
+          "basis": "declared",
+          "environment": {
+            "name": "github-pages"
+          },
+          "name": "deploy",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ]
         }
       ],
       "landings": [],
@@ -1332,7 +1789,7 @@
         {
           "boundary": "site",
           "depth": 0,
-          "files": 3
+          "files": 5
         }
       ],
       "readers": [],
@@ -1400,56 +1857,119 @@
       "usesWorkflowToken": false
     },
     {
-      "checksCount": 1,
+      "checksCount": 0,
       "commands": [
         {
+          "dir": "",
           "job": "release",
-          "step": "Install npm >= 11.5.1 (required for OIDC trusted publishing)",
-          "text": "# Node 22 ships npm 10.9, which signs provenance but cannot negotiate\n# the OIDC auth path (publish PUT returns a misleading 404). Install a\n# newer npm into a sandbox prefix and shadow it on PATH — an in-place\n# `npm i -g npm@latest` races the bundled arborist and breaks.\nnpm install --prefix \"$HOME/.npm-cli-sandbox\" npm@latest >/dev/null 2>&1\necho \"$HOME/.npm-cli-sandbox/node_modules/.bin\" >> \"$GITHUB_PATH\"\n"
+          "programs": [
+            "1",
+            "echo",
+            "npm"
+          ],
+          "step": "Install npm >= 11.5.1 (required for OIDC trusted publishing)"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Show npm version",
-          "text": "npm --version"
+          "programs": [
+            "npm"
+          ],
+          "step": "Show npm version"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Resolve release tag",
-          "text": "TAG=\"${{ github.event.inputs.tag || github.ref_name }}\"\necho \"tag=$TAG\" >> \"$GITHUB_OUTPUT\"\necho \"version=${TAG#v}\" >> \"$GITHUB_OUTPUT\"\n"
+          "programs": [
+            "echo"
+          ],
+          "step": "Resolve release tag"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Verify tag matches package.json version",
-          "text": "PKG_VERSION=\"$(node -p \"require('./package.json').version\")\"\nif [ \"${{ steps.tag.outputs.version }}\" != \"$PKG_VERSION\" ]; then\n  echo \"::error::Tag ${{ steps.tag.outputs.tag }} does not match package.json version $PKG_VERSION\"\n  exit 1\nfi\necho \"Tag ${{ steps.tag.outputs.tag }} matches package.json version $PKG_VERSION\"\n"
+          "programs": [
+            "echo",
+            "node"
+          ],
+          "step": "Verify tag matches package.json version"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Install dependencies",
-          "text": "npm ci"
+          "programs": [
+            "npm"
+          ],
+          "step": "Install dependencies"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Build",
-          "text": "npm run build"
+          "programs": [
+            "npm"
+          ],
+          "step": "Build"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Test",
-          "text": "npm run test:run"
+          "programs": [
+            "npm"
+          ],
+          "step": "Test"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Publish to npm (OIDC trusted publishing + provenance)",
-          "text": "npm publish --provenance --access public"
+          "programs": [
+            "npm"
+          ],
+          "step": "Publish to npm (OIDC trusted publishing + provenance)"
         },
         {
+          "dir": "",
           "job": "release",
-          "step": "Create GitHub Release",
-          "text": "TAG=\"${{ steps.tag.outputs.tag }}\"\nif gh release view \"$TAG\" >/dev/null 2>&1; then\n  echo \"Release $TAG already exists — skipping.\"\nelse\n  gh release create \"$TAG\" --title \"$TAG\" --generate-notes\nfi\n"
+          "programs": [
+            "1",
+            "echo",
+            "gh"
+          ],
+          "step": "Create GitHub Release"
         }
       ],
       "elsewhere": [],
       "file": ".github/workflows/release.yml",
+      "jobs": [
+        {
+          "basis": "declared",
+          "name": "release",
+          "runsOn": [
+            {
+              "labels": [
+                "ubuntu-latest"
+              ],
+              "platform": {
+                "cpu": "x64",
+                "libc": "glibc",
+                "os": "linux"
+              }
+            }
+          ],
+          "setup": [
+            {
+              "ranges": [
+                {
+                  "from": "22",
+                  "range": ">=22.0.0 <23.0.0-0"
+                }
+              ],
+              "step": "Setup Node.js",
+              "uses": "actions/setup-node",
+              "version": "22"
+            }
+          ]
+        }
+      ],
       "landings": [],
       "mentions": [
         {
@@ -1478,11 +1998,12 @@
       "readers": [],
       "runs": [
         {
+          "built": true,
           "directory": true,
           "job": "release",
           "matched": true,
           "path": "src/",
-          "runKind": "checks",
+          "runKind": "executes",
           "via": "tsc tsconfig.json"
         },
         {
@@ -1706,6 +2227,17 @@
         "releases": true
       },
       "stages": [],
+      "tests": [
+        {
+          "files": 28,
+          "job": "release",
+          "runner": "vitest",
+          "step": "Test",
+          "through": [
+            "npm run test:run"
+          ]
+        }
+      ],
       "triggers": [
         {
           "event": "push",
@@ -1787,9 +2319,10 @@
       "to": "src"
     }
   ],
+  "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "e9980b15b46aa40fefe42e9d8b370d84e9fc1b25",
-    "tracked": 96
+    "commit": "f50cd7d0544493605dce89b3601675a9a370f04b",
+    "tracked": 97
   },
   "landings": [
     {
@@ -1807,7 +2340,8 @@
     {
       "readers": [
         {
-          "by": ".github/workflows/release.yml"
+          "by": ".github/workflows/release.yml",
+          "confidence": "config"
         },
         {
           "by": "tests/stage-bc-regression.test.ts",
