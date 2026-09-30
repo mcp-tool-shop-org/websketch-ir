@@ -1,25 +1,28 @@
 # websketch-ir: how it works
 
-Mapped at 2026-09-25 from commit e9980b1.
+Mapped at 2026-09-30 from commit f50cd7d by Atlas 1.24.0.
 
 ## What this is
 
-6 parts, mostly TypeScript (46 files) and JavaScript (2). Work enters through 4 doors; CI and Release each reach 2 parts, and CI is followed because a pull request goes through it. It publishes to npm. People import @mcptoolshop/websketch-ir.
+6 parts, mostly TypeScript (46 files), CSS (2), JavaScript (2) and Astro (1). Work enters through 4 doors; CI and Release each reach 2 parts, and CI is followed because a pull request goes through it. It publishes to npm. It deploys a site to GitHub Pages. People import @mcptoolshop/websketch-ir.
 
-## What changed since the last map
+## What changed since 2026-09-25 (e9980b1)
 
-This is the first map.
+- CI's push trigger now also names `codecov.yml`.
+- 1 file added and 3 changed content, across 2 parts.
 
 ## What comes in
 
-1. **CI.** On a pull request; on a push to main touching 6 paths; or by hand. Runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more; checks src/.
-2. **Release.** When a tag matching `v*` is pushed; or by hand. Runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more; checks src/.
-3. **Deploy site to GitHub Pages.** On a pull request touching 2 paths; on a push to main touching 2 paths; or by hand. Runs site/astro.config.mjs and site/src/.
+1. **CI.** On a pull request to main; on a push to main touching 7 paths; or by hand. Runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more; builds src/.
+2. **Release.** When a tag matching `v*` is pushed; or by hand. Runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more; builds src/.
+3. **Deploy site to GitHub Pages.** On a pull request to main touching 2 paths; on a push to main touching 2 paths; or by hand. Runs site/astro.config.mjs and site/src/.
 4. **@mcptoolshop/websketch-ir** (the package people import). Loads src/index.ts, src/codegen/index.ts, src/errors.ts and 1 more.
 
 ## What happens through CI
 
-1. The workflow runs 28 files in tests; it checks src/ in src.
+1. The workflow runs 28 files in tests; it builds src/ in src.
+2. It uploads coverage to Codecov.
+3. It scans for secrets with TruffleHog.
 
 ## Who reads the results
 
@@ -27,9 +30,9 @@ CI writes nothing this map can see.
 
 ## The other doors
 
-**Release** runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more, checks src/, publishes to npm, and creates a GitHub release.
+**Release** runs tests/codegen.test.ts, tests/compat.test.ts, tests/diff.test.ts and 25 more, builds src/, publishes to npm, and creates a GitHub release.
 
-**Deploy site to GitHub Pages** runs site/astro.config.mjs and site/src/, and deploys the site on a push to main.
+**Deploy site to GitHub Pages** runs site/astro.config.mjs and site/src/, and deploys the site on a push to main or by hand.
 
 **@mcptoolshop/websketch-ir** (the package people import) loads src/index.ts, src/codegen/index.ts, src/errors.ts and 1 more.
 
@@ -66,13 +69,13 @@ People write .github/, the repository root and site/. Nothing in this repository
 
 ## Where to start
 
-src/codegen/index.ts
+.github/workflows/ci.yml → src/index.ts → src/text.ts → src/errors.ts → src/compat.ts
 
-Read those in order to follow one import of @mcptoolshop/websketch-ir end to end. This path follows @mcptoolshop/websketch-ir (the package people import) from its entry, since CI runs only tests.
+Read those in order to follow one pull request end to end.
 
 ## What this map cannot see
 
 - 1 read goes to a path its caller passes, not to this repository.
-- Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 20 source files reach 10 revisions.
+- Statistics confidence is low: fewer than 30 qualifying commits in the window, and fewer than 25 source files reach 10 revisions.
 
 Regenerate with `npx --yes @dogfood-lab/atlas map`.
