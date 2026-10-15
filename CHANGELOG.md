@@ -5,6 +5,8 @@
 ### Security
 
 - **`escapeMd` escapes the backslash.** The Markdown renderer's escape for untrusted page text covered `|`, the backtick, `[` and `]` but not `\`, so the text `\|` came out as `\\|`, a literal backslash followed by a live pipe, and `\[` likewise. The backslash is escaped first now. (CodeQL `js/incomplete-sanitization`.)
+- **The audit gates pass again.** Two advisories newer than the last green run (2026-09-30) failed the root `npm audit` job and the Pages deploy. Lockfile-only updates, no range changed: `source-map-js` 1.2.2 (high, event-loop denial of service; a root dev dependency and in `site/`), and in `site/` `sharp` 0.35.5 (high), `http-cache-semantics` 4.3.0 (high) and `smol-toml` 1.9.1 (moderate). The root audit is clean at `moderate`; the site audit is clean at `high`, the level its Pages job gates on.
+- **Known and accepted in the docs site:** `site/` still carries 10 moderate advisories, all one chain: `@astrojs/starlight` > `expressive-code` > `postcss-nested` > `postcss-selector-parser` below 7.1.6 (GHSA-rj75-hqrm-r3gf, quadratic selector parsing, CPU exhaustion when building the docs). There is no upstream fix; the only one npm offers is a breaking downgrade of Starlight to 0.21.5, which is not taken, and no override is forced. The site is a build-time docs tool and is not in the published package (`files` lists `dist`, the README, the handbook, the changelog and the licence only).
 
 ## 2.3.0 — 2026-06-21
 

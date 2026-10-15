@@ -93,7 +93,7 @@
           "path": ".gitignore"
         },
         {
-          "hash": "8f96d60b1bcfaa6e69d86d83f600028df4c339afbf63477aa6625abfce268457",
+          "hash": "f4684b537315331c738d8c98359faefd73ea74d0fb2d17d7e76272043c6384d2",
           "path": "CHANGELOG.md"
         },
         {
@@ -169,7 +169,7 @@
           "path": "logo.png"
         },
         {
-          "hash": "14f7ddef3c20dd20afd75fd73e8a2bb5ea3eef14be882992ddcc045e1dc4ecee",
+          "hash": "04c53eb9b132da17606b3b62b05e0fd1767f52bcff8d426e8a4d088a879652aa",
           "path": "package-lock.json"
         },
         {
@@ -204,7 +204,7 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "a9341449047648816a59a0e49fd68e6f795fe46072106813a502851be1d3b408",
+          "hash": "c5e3ad767ce7aa24fc9e6e4806f58b4fd7b51a70282fe18be7469cbebd764e12",
           "path": "site/package-lock.json"
         },
         {
@@ -2321,7 +2321,7 @@
   ],
   "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "77caf3b328eacc3cadf9ef7e4843962dcf9ac213",
+    "commit": "de085a988e76ee9fb506a91a36557da8d37a4f63",
     "tracked": 97
   },
   "landings": [
