@@ -43,7 +43,7 @@ const DEFAULT_OPTIONS: Required<RenderMarkdownOptions> = {
 /**
  * Escape markdown-significant characters in untrusted inline text so it
  * cannot break out of table cells, links, headers, bold, or list items.
- * Strips/escapes: pipe, backtick, square brackets, leading block markers
+ * Strips/escapes: backslash, pipe, backtick, square brackets, leading block markers
  * (#/>/-/*), and collapses newlines. Kept minimal to avoid over-escaping
  * normal prose.
  */
@@ -51,6 +51,9 @@ function escapeMd(value: string): string {
   return value
     // Collapse any newlines to spaces so a single value stays on one line.
     .replace(/[\r\n]+/g, " ")
+    // Escape the backslash first, so input like `\|` cannot cancel the escape
+    // added for the pipe below and leave it live.
+    .replace(/\\/g, "\\\\")
     // Escape inline-significant characters.
     .replace(/([|`[\]])/g, "\\$1")
     // Strip leading block-level markers that would change the line's meaning.

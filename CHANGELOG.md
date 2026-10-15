@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.1 — 2026-10-14
+
+### Security
+
+- **`escapeMd` escapes the backslash.** The Markdown renderer's escape for untrusted page text covered `|`, the backtick, `[` and `]` but not `\`, so the text `\|` came out as `\\|`, a literal backslash followed by a live pipe, and `\[` likewise. The backslash is escaped first now. (CodeQL `js/incomplete-sanitization`.)
+
 ## 2.3.0 — 2026-06-21
 
 Resurrection + health-pass + feature release. The package was revived from the
