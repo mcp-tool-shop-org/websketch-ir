@@ -93,7 +93,7 @@
           "path": ".gitignore"
         },
         {
-          "hash": "4ab78752dd26ae2b6f14c97751dad657445f7b2b2ded341e873be167421d7117",
+          "hash": "8f96d60b1bcfaa6e69d86d83f600028df4c339afbf63477aa6625abfce268457",
           "path": "CHANGELOG.md"
         },
         {
@@ -169,11 +169,11 @@
           "path": "logo.png"
         },
         {
-          "hash": "4a46ce10ab6e78815fb7dd3d20f724249f1e20f263f4dc4b852fc62fe9640ba8",
+          "hash": "14f7ddef3c20dd20afd75fd73e8a2bb5ea3eef14be882992ddcc045e1dc4ecee",
           "path": "package-lock.json"
         },
         {
-          "hash": "2a560561e04fdf5af74b790522855ed556056736b2f9ef8047f4c757f9063fc7",
+          "hash": "498be6a72282373b124b3b84596e341bb32488f9d03757954bc27379f416a510",
           "path": "package.json"
         },
         {
@@ -204,7 +204,7 @@
           "path": "site/astro.config.mjs"
         },
         {
-          "hash": "7b9687114ce277e8f1d3b5a7883fbdf9fd45c571427f8086be7364e4d283ec7d",
+          "hash": "a9341449047648816a59a0e49fd68e6f795fe46072106813a502851be1d3b408",
           "path": "site/package-lock.json"
         },
         {
@@ -270,7 +270,7 @@
         },
         {
           "constantOnly": true,
-          "hash": "a8020fe8a9c62ba069533004dbc2e8044e6169b17908c17838615c229a871ee1",
+          "hash": "0bed25b1ac50015533e6dd582ef15ca82cd66fc9608b7bdf0373d02295f409ed",
           "path": "site/src/site-config.ts"
         },
         {
@@ -581,7 +581,7 @@
             "queryWithin",
             "walkNodes"
           ],
-          "hash": "77906796c8f86ecacd50741a50425190f1394ae99cc5a171e0b675dff465e9b2",
+          "hash": "e66bb145d976dc429b86cf84214e2bcc0f47350b00ae7d8a7ae1559e7cd54019",
           "path": "src/grammar.ts"
         },
         {
@@ -660,7 +660,7 @@
           "exports": [
             "renderMarkdown"
           ],
-          "hash": "85b54809533d7e838d6066b1ad0731665743a25a4be93aa91d88a284a15fc7b5",
+          "hash": "35d7fbf19164f7bbf73285b9e0c1e587fceeb8bdf3b666da2c57458a9167412f",
           "importsFiles": [
             "src/grammar.ts"
           ],
@@ -997,7 +997,7 @@
           "testFramework": "vitest"
         },
         {
-          "hash": "09c7d7f905b29e87e2f8ec3ec0e8e7b9d51b4c3477b489d1ff8f0f3fb00a76f7",
+          "hash": "109a7eb06ab15de39a594232c73364e39556a6e3314e59aad6fa6138a6f4b425",
           "importsFiles": [
             "src/index.ts",
             "src/render/markdown.ts",
@@ -2321,7 +2321,7 @@
   ],
   "engine": "1.24.0",
   "generatedFrom": {
-    "commit": "f50cd7d0544493605dce89b3601675a9a370f04b",
+    "commit": "77caf3b328eacc3cadf9ef7e4843962dcf9ac213",
     "tracked": 97
   },
   "landings": [

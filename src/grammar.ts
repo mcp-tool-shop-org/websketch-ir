@@ -12,7 +12,7 @@
  * Single source of truth for the library version, stamped into capture
  * compiler metadata. Keep in sync with package.json `version`.
  */
-export const LIBRARY_VERSION = "2.3.0";
+export const LIBRARY_VERSION = "2.3.1";
 
 // =============================================================================
 // Bounding Box (viewport-relative 0-1)

@@ -108,6 +108,22 @@ describe("regression: renderMarkdown escapes injection in semantic labels", () =
     expect(md).toContain("\\|");
     expect(md).toContain("\\[");
   });
+
+  it("escapes the backslash so it cannot cancel the pipe/bracket escape", () => {
+    const node = makeNode("TEXT", [0, 0, 1, 0.1], {
+      semantic: "a\\|b \\[x](http://evil)",
+      text: { kind: "short", len: 22, hash: "0000000000000000" },
+    });
+    const md = renderMarkdown(makeCapture(node));
+    // Input `\|` becomes `\\` + `\|`: a literal backslash, then an escaped pipe.
+    expect(md).toContain("a\\\\\\|b");
+    expect(md).toContain("\\\\\\[x\\]");
+    // Every pipe/bracket in the label is preceded by an odd run of backslashes.
+    const label = md.slice(md.indexOf("a\\"), md.indexOf("(http://evil)"));
+    for (const m of label.matchAll(/(\\*)[|[]/g)) {
+      expect(m[1].length % 2).toBe(1);
+    }
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
