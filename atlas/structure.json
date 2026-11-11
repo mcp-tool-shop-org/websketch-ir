@@ -29,7 +29,7 @@
           "path": ".github/websketch-logo.png"
         },
         {
-          "hash": "5fb99cac6f74fc9568946204002c33f339f94a63814ed3ba8d2339bfed86cd49",
+          "hash": "a46646b63867fe3e48cfb09ec4ac2cf5f32f7f7f8b523e5dd4329764e24ca397",
           "path": ".github/workflows/ci.yml"
         },
         {
@@ -2249,6 +2249,13 @@
           "event": "workflow_dispatch"
         }
       ],
+      "unresolvedExpressions": [
+        {
+          "adds": "words",
+          "job": "release",
+          "step": "Verify tag matches package.json version"
+        }
+      ],
       "uses": [
         "actions/checkout",
         "actions/setup-node"
@@ -2319,9 +2326,9 @@
       "to": "src"
     }
   ],
-  "engine": "1.24.0",
+  "engine": "1.26.0",
   "generatedFrom": {
-    "commit": "de085a988e76ee9fb506a91a36557da8d37a4f63",
+    "commit": "deda83e08b89bbd5158dcbb9a50d3f5f11a402f3",
     "tracked": 97
   },
   "landings": [
