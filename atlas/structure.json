@@ -169,11 +169,11 @@
           "path": "logo.png"
         },
         {
-          "hash": "04c53eb9b132da17606b3b62b05e0fd1767f52bcff8d426e8a4d088a879652aa",
+          "hash": "a3a8a35bab5ef7f24e953c1849dda376435692b067b12a1323fd699faefb63af",
           "path": "package-lock.json"
         },
         {
-          "hash": "498be6a72282373b124b3b84596e341bb32488f9d03757954bc27379f416a510",
+          "hash": "9644aa2ef50ccd69aa464599b38ab5688888f3a9517367979364911cd4dbe2f9",
           "path": "package.json"
         },
         {
@@ -2328,7 +2328,7 @@
   ],
   "engine": "1.26.0",
   "generatedFrom": {
-    "commit": "deda83e08b89bbd5158dcbb9a50d3f5f11a402f3",
+    "commit": "1837fdd7e0251431790a5925910cab1df5aece9c",
     "tracked": 97
   },
   "landings": [
